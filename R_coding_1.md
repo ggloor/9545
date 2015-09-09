@@ -1,93 +1,195 @@
 # A minimal R Markdown example
 
-A quote:
 
-> Markdown is not LaTeX.
+```r
+# this is a comment
+# this will run inside an R environment if you remove the # before the ?
+# ?mean
+# generic help built into R about the mean function
+# stats'y language
+```
+everything in R is a vector (or series of values)
+x = [x1,x2,x3,...xn]
 
-To compile me, run this in R:
+## data types
+- vector
+- matrix (2 dimensional vector of the same data type)
+- data.frame (2 dimensional vector of different data types)
+- list - arbitrary data types, contain anything
 
-    library(knitr)
-    knit('001-minimal.Rmd')
+some functions need data.frame, other matrices or lists, you must convert
 
-See [output here](https://github.com/yihui/knitr-examples/blob/master/001-minimal.md).
+in R, observations (samples) are typically in rows, and variables (genes, OTUs, etc) are in columns
 
-## code chunks
-
-A _paragraph_ here. A code chunk below (remember the three backticks):
+lets make 3 vectors and examine them
+These functions generate random numbers and we can get summary statistics of them.
 
 
 ```r
-1+1
+# all functions in R contain their arguments in ()
+# all subsetting uses []
+# all programming is inside {}
+
+# <- assignment
+# c() concatenation function
+# runif() random uniform function to generate pseudo random numbers
+
+x <- c(runif(10, 0,10))
+y <- c(runif(10,2,10))
+z <- c(runif(10,0,5))
+
+# what to x, y and z contain?
+
+mean(x)
 ```
 
 ```
-## [1] 2
+## [1] 3.992126
 ```
 
 ```r
-.4-.7+.3 # what? it is not zero!
+mean(y)
 ```
 
 ```
-## [1] 5.551115e-17
+## [1] 5.970781
 ```
 
-## graphics
+```r
+mean(z)
+```
 
-It is easy.
+```
+## [1] 2.669965
+```
+
+```r
+summary(x)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.1318  2.5510  3.9230  3.9920  4.9360  8.4270
+```
+
+```r
+# we can subset from a vector
+summary(x)[2]
+```
+
+```
+## 1st Qu. 
+##   2.551
+```
+
+Now we can convert xyz into a matrix using cbind. What does the rbind() function do?
+
+```r
+xyz <- cbind(x,y,z)
+dim(xyz)
+```
+
+```
+## [1] 10  3
+```
+
+```r
+is.matrix(xyz)
+```
+
+```
+## [1] TRUE
+```
+
+```r
+is.data.frame(xyz)
+```
+
+```
+## [1] FALSE
+```
+
+```r
+# or subset xyz matrix to third column and rows 1 to 5
+
+xyz[1:5,3]
+```
+
+```
+## [1] 3.646010 2.415433 1.043958 2.155368 1.492127
+```
+
+```r
+# we can make xyz into a data.frame
+df.xyz <- as.data.frame(xyz)
+
+# and examine the structure
+str(xyz)
+```
+
+```
+##  num [1:10, 1:3] 7.83 2.71 8.43 2.5 4.03 ...
+##  - attr(*, "dimnames")=List of 2
+##   ..$ : NULL
+##   ..$ : chr [1:3] "x" "y" "z"
+```
+
+```r
+str(df.xyz)
+```
+
+```
+## 'data.frame':	10 obs. of  3 variables:
+##  $ x: num  7.83 2.71 8.43 2.5 4.03 ...
+##  $ y: num  9.26 5.82 9.13 5.28 3.68 ...
+##  $ z: num  3.65 2.42 1.04 2.16 1.49 ...
+```
+we can make random data drawn from a normal distribution using the rnorm function
+
+```r
+# drawing 10 values with a mean of 5 and a standard deviation of 2
+xn <- rnorm(10,5,2)
+```
+
+We can explore by examining the data graphically using either boxplots or stripcharts
 
 
 ```r
-plot(1:10)
+# generates a boxplot: http://flowingdata.com/2008/02/15/how-to-read-and-use-a-box-and-whisker-plot/
+boxplot(x,y,z)
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
 
 ```r
-hist(rnorm(1000))
+# generates a stripchart: https://stat.ethz.ch/R-manual/R-devel/library/graphics/html/stripchart.html
+# one thing is that they require a list
+# jitter moves the values so they overlap less
+# try group.names = c("X","Y","Z") as an option
+stripchart(list(x,y,z), vertical=TRUE, method="jitter", jitter=0.2)
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-2.png) 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-2.png) 
 
-## inline code
+make sure you have the ability to generate and save R markdown documents for next class
 
-Yes I know the value of pi is 3.1415927, and 2 times pi is 6.2831853.
+for your exploration:
 
-## math
+- what is the dimension of xyz as a data.frame or a matrix?
 
-Sigh. You cannot live without math equations. OK, here we go: $\alpha+\beta=\gamma$. Note this is not supported by native markdown. You probably want to try RStudio, or at least the R package **markdown**, or the function `knitr::knit2html()`.
+- can you tell the difference between the rnorm and runif outputs for n=3, n=10, n=100?
 
-## nested code chunks
+- what is the difference between these three subset forms?
 
-You can write code within other elements, e.g. a list
+-- df.xyz$z[1:5]
 
-1. foo is good
-    
-    ```r
-    strsplit('hello indented world', ' ')[[1]]
-    ```
-    
-    ```
-    ## [1] "hello"    "indented" "world"
-    ```
-2. bar is better
+-- df.xyz[1:5,3]
 
-Or inside blockquotes:
+-- xyz[1:5,"z"]
 
-> Here is a quote, followed by a code chunk:
->
-> 
-> ```r
-> x = 1:10
-> rev(x^2)
-> ```
-> 
-> ```
-> ##  [1] 100  81  64  49  36  25  16   9   4   1
-> ```
 
-## conclusion
 
-Nothing fancy. You are ready to go. When you become picky, go to the [knitr website](http://yihui.name/knitr/).
 
-![knitr logo](http://yihui.name/knitr/images/knit-logo.png)
+
+
+
