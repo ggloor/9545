@@ -25,7 +25,7 @@ lets make 3 vectors and examine them
 These functions generate random numbers and we can get summary statistics of them.
 
 
-```r
+```{r, eval=TRUE}
 # all functions in R contain their arguments in ()
 # all subsetting uses []
 # all programming is inside {}
@@ -38,12 +38,13 @@ x <- c(runif(10, 0,10))
 y <- c(runif(10,2,10))
 z <- c(runif(10,0,5))
 
-# what to x, y and z contain?
+```{r}
+# what is the mean value of vector x?
 
 mean(x)
 ```
 
-```
+```r
 ## [1] 3.992126
 ```
 
