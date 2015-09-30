@@ -1,0 +1,90 @@
+---
+title: "Biplots and clustering"
+author: "gg"
+date: "September 22, 2015"
+fig_caption: true
+output: html_document
+---
+
+## Exploring multivariate data
+
+Multivariate data are complex, and not easily envisioned. For this reason we use data reduction techniques to examine the relationships between the data. These techniques require us to understand two fundamental issues: distance and variance.
+
+### Distance is simply what we imagine it is.
+
+But there are many ways to measure it. We will discuss the two main methods of distance, city block and Euclidian. Distance is the building block for clustering, where the idea is to show the distance relationships among the samples. Distance is controversial, ** "researchers’ choices of a proximity measure, as well as possible transformations of the initial data, are usually governed by their prior education, the school of thought they happen to follow, and the literature they are emulating, rather than an insight into the properties of the measure itself." **
+
+(Michael Greenacre, Author Multivariate Analysis of Ecological Data)
+
+
+### Variance is also what we think it is:
+
+ dispersion around some centre. But, in a multivarite dataset, the dispersion is not easy to visualize. Thus we have Principle Component Analysis (PCA), that identifies and displays the axes of variance in the data. An approachable introduction to this (best I've seen anyway) is at: https://www.ling.ohio-state.edu/~kbaker/pubs/Singular_Value_Decomposition_Tutorial.pdf. You should read and understand this as best you can.
+
+Now for some code. I have put up a dataset composed of a subset of the Human Microbiome project oral 16S rRNA gene survey dataset on github.
+
+First clustering. This is also called unsupervised clustering.
+
+```{r, message=FALSE}
+library(compositions)
+library(zCompositions)
+
+
+# read the table, with column and row names, columns tab delimited
+d.bf.1 <- read.table("tongue_vs_cheek.txt", header=T, row.names=1, sep="\t")
+
+
+# move taxonomy info to a vector
+tax.0 <- d.bf.1$tax
+# remove the taxonomy column
+d.bf.1$tax <- NULL
+
+# keep only those samples with > 10000 reads
+d.bf.0 <- d.bf.1[,which(apply(d.bf.1,2,sum) > 10000)]
+
+
+# simplify the dataset, by keeping only taxa present in x fraction of the samples
+cutoff = .8
+d.subset <- data.frame(d.bf.0[which(apply(d.bf.0, 1, function(x){length(which(x != 0))/length(x)}) > cutoff),])
+tax.subset <- tax.0[which(apply(d.bf.0, 1, function(x){length(which(x != 0))/length(x)}) > cutoff)]
+
+# oh boy, so much here to explain
+short_tax <- gsub(".+__", "", tax.subset)
+com <- c(rep("T", length(grep("td_.", colnames(d.subset))) ),rep("B", length(grep("bm_.", colnames(d.subset))) ))
+
+# replace 0 values with an estimate of the probability that the zero is not 0
+d.n0 <- cmultRepl(t(d.subset),  label=0, method="GBM")
+
+# convert everything to log-ratios
+# equivalent to log(x/gx) for every value where gx is the geomtric mean of the vector X
+d.n0.clr <- apply(d.n0, 2, function(x){log(x) - mean(log(x))})
+
+colnames(d.n0.clr) <- short_tax
+rownames(d.n0.clr) <- com
+
+
+# finally to the clustering!
+# we are doing Euclidian distance (the default) on the log-ratio values
+# this is called an Aitchison distance (by some) and is the valid way to determine
+# distance for compositional data
+dd <- dist(d.n0.clr)
+hc <- hclust(dd, method="ward")
+plot(hc)
+
+```
+The biplot
+```{r}
+conds <- data.frame(c(rep(1,length(grep("td_", colnames(d.bf.0)))), rep(2, length(grep("bm_", colnames(d.bf.0))))))
+colnames(conds) <- "cond"
+
+pcx <- prcomp(d.n0.clr)
+
+# the scree plot
+plot((pcx$sdev^2/mvar(d.n0.clr))[1:10], type="b", xlab="Factor", ylab="Explained variance")
+# the biplot
+palette=palette(c("darkcyan","coral3"))
+
+par(mfrow=c(1,1))
+coloredBiplot(pcx,col=rgb(0,0,0,0.8),cex=c(0.8,0.4), xlabs.col=conds$cond, var.axes=F, arrow.len=0.05)
+
+```
