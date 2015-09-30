@@ -21,18 +21,16 @@ But there are many ways to measure it. We will discuss the two main methods of d
 
  dispersion around some centre. But, in a multivarite dataset, the dispersion is not easy to visualize. Thus we have Principle Component Analysis (PCA), that identifies and displays the axes of variance in the data. An approachable introduction to this (best I've seen anyway) is at: https://www.ling.ohio-state.edu/~kbaker/pubs/Singular_Value_Decomposition_Tutorial.pdf. You should read and understand this as best you can.
 
-Now for some code. I have put up a dataset composed of a subset of the Human Microbiome project oral 16S rRNA gene survey dataset on github.
-
-First clustering. This is also called unsupervised clustering.
+Now for some code. I have put up a dataset composed of a subset of the Human Microbiome project oral 16S rRNA gene survey dataset on github. The first chunk is just a lot of plumbing. It is here for reference. To use this you will need to get the table tongue_vs_cheek.txt from github and put it in the same directory as the .Rmd document.
 
 ```{r, message=FALSE}
+# we need these libraries for the colored biplot, and for the 0 replacement function
 library(compositions)
 library(zCompositions)
 
-
 # read the table, with column and row names, columns tab delimited
+# samples are by column, variables are by row
 d.bf.1 <- read.table("tongue_vs_cheek.txt", header=T, row.names=1, sep="\t")
-
 
 # move taxonomy info to a vector
 tax.0 <- d.bf.1$tax
@@ -40,43 +38,69 @@ tax.0 <- d.bf.1$tax
 d.bf.1$tax <- NULL
 
 # keep only those samples with > 10000 reads
+# the which command returns a vector of numbers corresponding to the columns that have > 10000 reads. Try it on its own in the console
 d.bf.0 <- d.bf.1[,which(apply(d.bf.1,2,sum) > 10000)]
 
-
 # simplify the dataset, by keeping only taxa present in x fraction of the samples
+# the which function returns a list of row numbers where the number of 0 values in the row is greater than the cutoff fraction
 cutoff = .8
 d.subset <- data.frame(d.bf.0[which(apply(d.bf.0, 1, function(x){length(which(x != 0))/length(x)}) > cutoff),])
 tax.subset <- tax.0[which(apply(d.bf.0, 1, function(x){length(which(x != 0))/length(x)}) > cutoff)]
 
 # oh boy, so much here to explain
+# two ways to substitute row and column labels
+# gsub replaces any number of characters denoted by the "." that are followed by two underscores with nothing from the list of taxa names in the reduced dataset
 short_tax <- gsub(".+__", "", tax.subset)
+
+# com is being assigned a vector of values where the "T" is replicated the number of times
+# that we observe td_ in the column names of the reduced data subset
 com <- c(rep("T", length(grep("td_.", colnames(d.subset))) ),rep("B", length(grep("bm_.", colnames(d.subset))) ))
 
 # replace 0 values with an estimate of the probability that the zero is not 0
+# this is from the zCompositions package
+##### IMPORTANT
+# at this point samples are by row, and variables are by column
+#####
 d.n0 <- cmultRepl(t(d.subset),  label=0, method="GBM")
 
 # convert everything to log-ratios
 # equivalent to log(x/gx) for every value where gx is the geomtric mean of the vector X
-d.n0.clr <- apply(d.n0, 2, function(x){log(x) - mean(log(x))})
+# I prefer to use log to the base 2
+d.n0.clr <- apply(d.n0, 2, function(x){log2(x) - mean(log2(x))})
 
+# replace row and column names for display
 colnames(d.n0.clr) <- short_tax
 rownames(d.n0.clr) <- com
 
+# herein ends the data munging
+```
 
+First clustering. This is also called unsupervised clustering. This approach is used to examine the overall similarity between samples by grouping them by their distance (more distance is less similarity). There are many different methods to determine distance, but most are based on either the city block (L1) or Euclidian (L2) distance (see wikipedia)
+
+You should explore how each clustering and distance metric changes the clustering
+
+```{r}
 # finally to the clustering!
 # we are doing Euclidian distance (the default) on the log-ratio values
+# the log-ratio values are linearly different, which is required for accurate use of Euclidian distance
 # this is called an Aitchison distance (by some) and is the valid way to determine
 # distance for compositional data
+
+# this generates a matrix of distances between each pair of samples
 dd <- dist(d.n0.clr)
+
 hc <- hclust(dd, method="ward")
 plot(hc)
 
 ```
-The biplot
+
+The biplot. Instructions for intrepreting these are in Figure 8 and discussion of 'introduction_to_compositions.pdf' on the course github site.
+
 ```{r}
 conds <- data.frame(c(rep(1,length(grep("td_", colnames(d.bf.0)))), rep(2, length(grep("bm_", colnames(d.bf.0))))))
 colnames(conds) <- "cond"
 
+# this is the key function that performs the calculations
 pcx <- prcomp(d.n0.clr)
 
 # the scree plot
