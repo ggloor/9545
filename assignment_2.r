@@ -69,7 +69,7 @@ rownames(d.n0.clr) <- gsub("td_.+", "T", rownames(d.n0.clr))
 # see class code for example
 colnames(d.n0.clr) <- gsub(".+__", "", tax)
 palette=palette(c("darkcyan","coral3"))
-conds <- data.frame(c(rep(1,length(grep("S", rownames(d.n0.clr)))), rep(2, length(grep("T", rownames(d.n0.clr))))))
+conds <- data.frame(c(rep(1,length(grep("T", rownames(d.n0.clr)))), rep(2, length(grep("S", rownames(d.n0.clr))))))
 colnames(conds) <- "cond"
 ####
 
