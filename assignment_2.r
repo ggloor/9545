@@ -89,7 +89,7 @@ coloredBiplot(pcx,col=rgb(0,0,0,0.3),cex=c(0.8,0.4), xlabs.col=conds$cond, var.a
 # the which function returns a list of row numbers where the number of 0 values in the row is greater than the cutoff fraction
 cutoff = .8
 d.subset <- data.frame(d[which(apply(d, 1, function(x){length(which(x != 0))/length(x)}) > cutoff),])
-tax.subset <- tax.0[which(apply(d.bf.0, 1, function(x){length(which(x != 0))/length(x)}) > cutoff)]
+tax.subset <- tax[which(apply(d, 1, function(x){length(which(x != 0))/length(x)}) > cutoff)]
 
 #### EXAMPLE to make a tongue or saliva only dataset
 d.t <- d[,grep("td_", colnames(d))]
