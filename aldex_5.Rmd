@@ -1,0 +1,78 @@
+---
+title: "Univariate compositional analysis"
+author: "gg"
+date: "October 7, 2015"
+fig_caption: true
+output: html_document
+---
+
+## Univariate differences between groups
+
+The selex
+Let us first look at the biplot
+```{r, message=FALSE}
+# we need these libraries for the colored biplot, and for the 0 replacement function
+library(compositions)
+library(zCompositions)
+library(ALDEx2)
+
+# get the example dataset
+data(selex)
+
+# replace 0 values with an estimate of the probability that the zero is not 0
+# this is from the zCompositions package
+##### IMPORTANT
+# at this point samples are by row, and variables are by column
+#####
+d.n0 <- cmultRepl(t(selex),  label=0, method="GBM")
+
+# convert everything to log-ratios
+# equivalent to log(x/gx) for every value where gx is the geomtric mean of the vector X
+# I prefer to use log to the base 2
+d.n0.clr <- apply(d.n0, 2, function(x){log2(x) - mean(log2(x))})
+
+conds <- data.frame(c(rep(1,7), rep(2, 7)))
+colnames(conds) <- "cond"
+
+# this is the key function that performs the calculations
+pcx <- prcomp(d.n0.clr)
+
+# the scree plot
+plot((pcx$sdev^2/mvar(d.n0.clr))[1:10], type="b", xlab="Factor", ylab="Explained variance")
+# the biplot
+palette=palette(c("darkcyan","coral3"))
+
+par(mfrow=c(1,1))
+coloredBiplot(pcx,col=rgb(0,0,0,0.1),cex=c(0.8,0.4), xlabs.col=conds$cond, var.axes=T, arrow.len=0.05, scale=1)
+
+```
+
+Now for the univariate differences
+
+```{r}
+cond <- c(rep("N",7), rep("S", 7))
+
+# aldex functions
+# generate a distribution of estimates for the technical replication for each variant
+# convert everything using the clr
+
+x <- aldex.clr(selex)
+
+# conduct univariate statistical tests on the distribution of inferred technical replicates
+# for each variant
+# correct for multiple hypothesis tests, and report the expected (mean) value
+x.t <- aldex.ttest(x,cond)
+
+# calculate median differences and dispersions, estimate effect sizes
+x.e <- aldex.effect(x,cond)
+
+# merge into one dataframe
+x.all <- data.frame(x.e,x.t)
+
+# display the results as difference-dispersion plots (effect plot)
+
+plot(x.all$diff.btw, x.all$diff.win, pch=19, cex=0.5, col=rgb(0,0,0,0.4))
+
+```
+
+what just happened?
