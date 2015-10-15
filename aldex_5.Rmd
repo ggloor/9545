@@ -24,7 +24,7 @@ data(selex)
 ##### IMPORTANT
 # at this point samples are by row, and variables are by column
 #####
-d.n0 <- cmultRepl(t(selex),  label=0, method="GBM")
+d.n0 <- cmultRepl(t(selex),  label=0, method="GBM", output="counts")
 
 # convert everything to log-ratios
 # equivalent to log(x/gx) for every value where gx is the geomtric mean of the vector X
@@ -43,7 +43,7 @@ plot((pcx$sdev^2/mvar(d.n0.clr))[1:10], type="b", xlab="Factor", ylab="Explained
 palette=palette(c("darkcyan","coral3"))
 
 par(mfrow=c(1,1))
-coloredBiplot(pcx,col=rgb(0,0,0,0.1),cex=c(0.8,0.4), xlabs.col=conds$cond, var.axes=T, arrow.len=0.05, scale=1)
+coloredBiplot(pcx,col=rgb(0,0,0,0.05),cex=c(0.8,0.4), xlabs.col=conds$cond, var.axes=T, arrow.len=0.05, scale=1)
 
 ```
 
@@ -71,7 +71,7 @@ x.all <- data.frame(x.e,x.t)
 
 # display the results as difference-dispersion plots (effect plot)
 
-plot(x.all$diff.btw, x.all$diff.win, pch=19, cex=0.5, col=rgb(0,0,0,0.4))
+plot(x.all$diff.win, x.all$diff.btw, pch=19, cex=0.5, col=rgb(0,0,0,0.2))
 
 ```
 
