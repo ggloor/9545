@@ -4,7 +4,11 @@ author: "gg"
 date: "September 22, 2015"
 fig_caption: true
 output: html_document
+caption: test
 ---
+
+To run this file:
+Rscript -e "rmarkdown::render('biplots_4.Rmd')"
 
 ## Exploring multivariate data
 
