@@ -1,0 +1,20 @@
+assignment 1
+
+First: Using the Gierlinski et al. paper provide a one page critique of the experimental design (both good and bad). Use the perspective that you want to use the data to determine what genes are differentially abundant in the KO compared to WT, not the perspective takin in the paper where they used the data to examine replication in RNA-seq in general.
+
+
+Second: Provide a costing for the experiment as written in the methods.
+
+Third: Provide a costing for all 672 samples to be processed independently (i.e., each was its own directional library)
+
+Current library and per-run costs for an Illumina MiSeq are given at: http://www.lrgc.ca/?page=fees
+
+Current per-lane costs from TCAG (Current) for an Illumina HiSeq 2500
+Each generates ~200 M reads per lane
+
+PE 2x250 nt indexed barcode run $3140
+PE 2x100 nt indexed barcode run $1900
+SE 100 nt indexed barcode run $1100
+SE 50 nt indexed barcode run $850
+
+Quality Control $50/multiplexed sample
