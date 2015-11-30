@@ -1,0 +1,591 @@
+---
+title: "Exploratory analysis of RNA-seq dataset"
+author: "gg"
+date: "`r Sys.Date()`"
+fig_caption: true
+output: pdf_document
+---
+
+To run this file:
+Rscript -e "rmarkdown::render('explore.Rmd')"
+
+
+Exploration of the 'Statistical Models for RNA-seq' paper from Barton lab, Bioinformatics 2015.
+
+In this paper, they generated a 7 technical, 48 biological replicate dataset generated from a yeast experiment comparing SNF2-KO to WT cells.
+
+The paper has three main messages.
+
+* that technical replicates are essentially Poisson distributed, this is similar to the Marioni paper, and we demonstrated that in the first ALDEx paper (Fernandes PLoS ONE 2013), and in the AJS paper (Gloor, Austrian Journal of Statistics, submitted). Nothing more needed I think, we use the sum of the technical replicates for all work. However, you should always check your lane replicates on a biplot first to ensure that the lane effects are minimal.
+
+* that they have developed a protocol to identify poor biological replicates that involves a linear function including Pearson's correlation (ugh!), outlier fraction, and Chi-squared sequencing depth variance. In some sense, these are all measuring variation.
+
+    thus, this can be addressed using a PCA plot of clr-transformed data very simply
+
+* that the mean-variance relationship is negative-binomial distributed
+
+    this is true in linear space, but not in clr space: will need Andrew, David or Vera/Juanjo's help on this
+
+* that the presence of 'bad' replicates breaks the negative binomial assumption
+
+    so test how the bad replicates affect the ALDEx and edgeR approaches
+
+### Technical replication
+
+The basic message here is that the technical replication is tight and Multivariate Poisson distributed. We have seen that, they see it, check it, reference it.
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+# load the required packages
+library(zCompositions)
+library(compositions)
+library(ALDEx2)
+library(edgeR)
+library(gplots)
+
+# read the dataset
+meta <- read.table("metadata.txt", header=T, row.names=1, check.names=F)
+
+# Group:sample:lane
+nms <- paste(meta[,2], meta[,3], meta[,1], sep=":")
+
+d <- read.table("countfinal2.file", header=T, row.names=1, check.names=F)
+
+# double check that the column names of d and rownames of meta
+# are congruent - they are
+
+# change the column names to something more informative
+colnames(d) <- nms
+# remove rows with 0 counts
+d.gt0 <- d[apply(d,1,sum) > 0,]
+
+# estimate 0 values (zCompositions)
+d.n0 <- cmultRepl(t(d.gt0), method="CZM", label=0)
+
+# clr transform
+d.n0.clr <- t(apply(d.n0, 1, function(x){log2(x) - mean(log2(x))}))
+
+# SVD and metric variance
+pcx <- prcomp(d.n0.clr)
+mvar.clr <- mvar(d.n0.clr)
+
+### form biplot
+### relationships between samples
+biplot(pcx, cex=c(0.5,0.01), var.axes=FALSE,
+   xlab=paste("PC1: ", round(sum(pcx$sdev[1]^2)/mvar.clr, 3)),
+   ylab=paste("PC2: ", round(sum(pcx$sdev[2]^2)/mvar.clr, 3)),
+   scale=0)
+```
+We can see that the samples cluster in sets of 7. Color each sample replicate similarly to observe the overlap. The alternative would be to determine the distance across replicates within samples or to determine the metric variance across replicates within samples.
+
+### Identifying outliers
+
+- First aggregate all samples by summing the values for all replicates to give 96 samples
+
+- Then remove genes with 0 reads across all samples.
+
+- Then plot the PCA of log-ratio transformed data. They are discrete for the two groups --- as expected
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+###########
+# aggregate all replicates
+nms.agg <- paste(meta[,2], meta[,3], sep=":")
+
+# make an aggregated dataset by sample
+d.agg <- aggregate(t(d), by=list(nms.agg), FUN=sum)
+rownames(d.agg) <- d.agg$Group.1
+d.agg$Group.1 <- NULL
+
+# remove rows with 0 counts
+d.agg.gt0 <- t(d.agg[,apply(d.agg, 2, sum) > 0])
+
+# estimate 0 values (zCompositions)
+d.agg.n0 <- cmultRepl(t(d.agg.gt0), method="CZM", label=0)
+
+# clr transform
+d.agg.n0.clr <- t(apply(d.agg.n0, 1, function(x){log2(x) - mean(log2(x))}))
+
+mvar.agg.clr <- mvar(d.agg.n0.clr)
+pcx.agg  <- prcomp(d.agg.n0.clr)
+par(mfrow=c(1,2))
+
+plot(pcx.agg$x[,1], pcx.agg$x[,2], pch=NA,
+    xlim=c(min(pcx.agg$x[,1] )-5, max(pcx.agg$x[,1] + 5)),
+    xlab=paste("PC1: ", round(sum(pcx.agg$sdev[1]^2)/mvar.agg.clr, 3)),
+    ylab=paste("PC2: ", round(sum(pcx.agg$sdev[2]^2)/mvar.agg.clr, 3)),
+    main="PCA score plot")
+text(pcx.agg$x[,1], pcx.agg$x[,2], labels=rownames(pcx.agg$x), cex=0.7)
+#hist(apply(pcx.agg$x,1,function(x){sum(x^2/mvar.agg.clr)}), breaks=100, xlab=NULL)
+#which(apply(pcx.agg$x,1,function(x){sum(x^2/mvar.agg.clr)}) > 1)
+
+
+# density of scores along PC2 for SNF
+plot(density(pcx.agg$x[,2][pcx.agg$x[,1] <0]), lty=1, lwd=3,
+    xlim=c(-30,70), main="Density plot", xlab="PC2 Value", ylab="Density")
+# density for wild type
+points(density(pcx.agg$x[,2][pcx.agg$x[,1] >0]), lty=2, lwd=3, type="l")
+# supports the idea that +/- 20 is a reasonable cutoff for sample exclusion
+# of the first two components.
+
+# check each independently
+mvar.s <- mvar(d.agg.n0.clr[1:48,])
+pcx.s <- prcomp(d.agg.n0.clr[1:48,])
+# biplot(pcx.s, cex=c(0.5,0.01), var.axes=FALSE, scale=0)
+
+mvar.w <- mvar(d.agg.n0.clr[49:96,])
+pcx.w <- prcomp(d.agg.n0.clr[49:96,])
+# biplot(pcx.w, cex=c(0.5,0.01), var.axes=FALSE, scale=0)
+
+# histogram of the variance of the sample as a function of the total variance
+# identifies a similar set of outliers, but some clearly have significant variance
+# on other component axes
+plot(density(apply(pcx.s$x,1,function(x){sum(x^2/mvar.s)})), main="SNF2",
+    xlab="Var Fraction", ylab="Density" )
+cut.s <- median(apply(pcx.s$x,1,function(x){sum(x^2/mvar.s)})) +
+    2 * IQR(apply(pcx.s$x,1,function(x){sum(x^2/mvar.s)}))
+abline(v=cut.s, lty=2)
+
+plot(density(apply(pcx.w$x,1,function(x){sum(x^2/mvar.w)})), main="WT",
+    xlab="Var Fraction", ylab="Density" )
+cut.w <- median(apply(pcx.w$x,1,function(x){sum(x^2/mvar.w)})) +
+    2 * IQR(apply(pcx.w$x,1,function(x){sum(x^2/mvar.w)}))
+abline(v=cut.w, lty=2)
+
+# list the outliers
+bad.s <- names(which(apply(pcx.s$x,1,function(x){sum(x^2/mvar.s)})>cut.s))
+bad.w <- names(which(apply(pcx.w$x,1,function(x){sum(x^2/mvar.w)})>cut.w))
+```
+
+The underlying observation here is that there may be two viable strategies to detect outliers. The first would be to make a cutpoint at PC2=20 and remove samples that have a PC2 score greater than 20. This would be specific to each experiment and would not work if the data were rotated. Thus, I favour the second which would be to determine which samples are contributing more than expected to the total variance of the group. In either case, this would have to be determined empirically. I suggest that an appropriate cutpoint would be to remove samples that are contributing at least the median plus twice the IQR of variance to the group: this would remove samples `r bad.s`  from the SNF2 group and samples `r bad.w` from the wildtype group. This is not in perfect concordance with Barton, but is likely defensible on the grounds that we are looking at excluding those samples that contribute more than expected to the total variance of the group. We could go to a more stringent cutoff for sure by reducing the difference from the median, and it might make sense to use 1.5 as a cutoff. This depends on the number of samples that an investigator has to burn.
+
+### Mean Variance relationship
+
+Finally, the Barton group demonstrated that the mean-variance relationship across samples could be modelled very well using the negative binomial distribution. This relationship is true in linear space --- when there are no outlier samples, and in this idealized dataset. However, they go on to make the strong point that therefore, we should use the negative binomial in linear space as the only method of performing differential abundance tests: even though they demonstrate that the data are not negatively binomial when there are outliers, and even though they did not test any alternatives.
+
+Thus, this is a fallacy because log-transformed data do not follow the negative binomial. The next figure shows the mean-variance relationship in the entire dataset as log-ratios, and in the dataset with the outliers removed.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+### make a clean dataset by removing the outliers
+# overplot whole and clean datasets (red, blue)
+
+bad <- c(bad.s, bad.w)
+
+good <- rownames(d.agg)[! rownames(d.agg) %in% bad]
+d.good <- d.agg[good,]
+# remove rows with 0 counts
+d.good.gt0 <- t(d.good[,apply(d.good, 2, sum) > 0])
+
+# estimate 0 values (zCompositions)
+d.good.n0 <- cmultRepl(t(d.good.gt0), method="CZM", label=0)
+
+#d.good.n0 <- t(d.good.gt0) + 0.5
+# clr transform
+d.good.n0.clr <- t(apply(d.good.n0, 1, function(x){log2(x) - mean(log2(x))}))
+
+pcx.good <- prcomp(d.good.n0.clr)
+mvar.good.clr <- mvar(d.good.n0.clr)
+
+# covariance biplot
+# relationships between variables
+biplot(pcx.good, cex=c(0.3,0.4), var.axes=FALSE,
+    xlab=paste("PC1: ", round(sum(pcx.good$sdev[1]^2)/mvar.good.clr, 3)),
+    ylab=paste("PC2: ", round(sum(pcx.good$sdev[2]^2)/mvar.good.clr, 3)),
+    scale=1)
+
+# form biplot
+# relationships between samples
+biplot(pcx.good, cex=c(0.5,0.01), var.axes=FALSE,
+    xlab=paste("PC1: ", round(sum(pcx.good$sdev[1]^2)/mvar.good.clr, 3)),
+    ylab=paste("PC2: ", round(sum(pcx.good$sdev[2]^2)/mvar.good.clr, 3)),
+    scale=0)
+```
+
+We see that removing the outliers has increased the separation on component 1, and reduced it on component 2. The SNF2 dataset is obviously much less variable than is the wt dataset - there is no information in the paper as to why this would be.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+end.s <- 48 - length(bad.s)
+start.w <- end.s + 1
+end.w <- 96 - length(bad)
+
+par(mfrow=c(1,2))
+# mean variance relationship SNF2 all
+m.clr <- apply(d.agg.n0.clr[1:48,], 2, mean)
+m.var <- apply(d.agg.n0.clr[1:48,], 2, var)
+plot(m.clr, m.var, pch=19, col=rgb(1,0,0,0.3), main="SNF2", xlab="Mean", ylab="Variance")
+
+# mean variance relationship SNF2 good
+m.clr <- apply(d.good.n0.clr[1:end.s,], 2, mean)
+m.var <- apply(d.good.n0.clr[1:end.s,], 2, var)
+points(m.clr, m.var, pch=19, col=rgb(0,0,1,0.3))
+
+# mean variance relationship WT all
+m.clr <- apply(d.agg.n0.clr[49:96,], 2, mean)
+m.var <- apply(d.agg.n0.clr[49:96,], 2, var)
+plot(m.clr, m.var, pch=19, col=rgb(1,0,0,0.3), main="WT", xlab="Mean", ylab="Variance")
+
+# mean variance relationship WT good
+m.clr.g <- apply(d.good.n0.clr[start.w:end.w,], 2, mean)
+m.var.g <- apply(d.good.n0.clr[start.w:end.w,], 2, var)
+points(m.clr.g, m.var.g, pch=19, col=rgb(0,0,1,0.3))
+
+
+```
+These plots show the mean variance relationship as for the entire dataset (red) and for the good dataset (blue). In general, there is less variance in the good than in the entire dataset, and there is a set of genes with high expression that appear to have much lower variance in both datsets. So what distribution does the log-ratio data fit?
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+# normality test for all
+not_0g <- which(apply(d.good.n0.clr, 2, mean) > -7)
+not_0 <- which(apply(d.agg.n0.clr, 2, mean) > -7)
+
+
+qq.s <- vector()
+# test for normality
+for(i in 1:ncol(d.agg.n0.clr)){
+	qq.s[i] <- shapiro.test(d.agg.n0.clr[1:48, i])$p.value
+}
+qq.s.bh <- p.adjust(qq.s)
+
+qq.w <- vector()
+# test for normality
+for(i in 1:ncol(d.agg.n0.clr)){
+	qq.w[i] <- shapiro.test(d.agg.n0.clr[49:96, i])$p.value
+}
+qq.w.bh <- p.adjust(qq.w)
+
+# normality test for good dataset
+qq.s.g<- vector()
+# test for normality
+for(i in 1:ncol(d.good.n0.clr)){
+	qq.s.g[i] <- shapiro.test(d.good.n0.clr[1:end.s, i])$p.value
+}
+qq.s.g.bh <- p.adjust(qq.s.g)
+
+qq.w.g<- vector()
+# test for normality
+for(i in 1:ncol(d.good.n0.clr)){
+	qq.w.g[i] <- shapiro.test(d.good.n0.clr[start.w:end.w, i])$p.value
+}
+qq.w.g.bh <- p.adjust(qq.w.g)
+
+
+```
+We can  test to determine if the data fits a log-normal distribution using the Shapiro-Wilks test. Since the data are log-ratio transformed then they should fit a normal distribution if the underlying data are log-normal. One caveat is that genes that are largely composed of 0 counts cannot fit a log-normal distribution because they are heavily left-censored. Such genes are excluded from the analysis with filter that excludes genes with a mean value of less than -7. These genes are observed to have extremely high within-condition variation when Bayesian estimation is used to determine the distribution of their underlying log-ratio values (Fernandes PLoS ONE 2013). This high variation excludes them from being observed as 'significant' regardless of the statistical test.
+
+So in the entire dataset  of  `r length(not_0)` and `r length(not_0g)` abundant genes in the entire and good dataset, there are `r length(which(qq.s.bh[not_0] < 0.05))` in the SNF2 deletion and `r length(which(qq.w.bh[not_0] < 0.05))` in the WT set. When the dataset is reduced by removing the outlier samples, then there are  `r length(which(qq.s.g.bh[not_0g] < 0.05))` and `r length(which(qq.w.g.bh[not_0g] < 0.05))`. Thus, while the majority of the genes have a normal distribution following center log-ratio transformation, some do not. With the the number of non-normally-distributed genes being greatly reduced when the data are filtered to remove outlying samples. Inspection of the non-normally distributed genes reveals that they are either left-skewed (as would happen if a number of the values were 0 values) or they are bimodal (as would happen if there was a sub-structure to the gene expression of some of these genes in one condition or the other).
+
+This reinforces the notion that whenever possible it is prudent to conduct statistical tests between conditions using non-parametric tests, but that in the worst case scenario a parametric test is probably OK, as long as outliers in the data are removed. This constrains the sample size to about 7-10 samples per group minimum for sufficient statistical power.
+
+### So what effect if any, do bad replicates have on the log-ration abundance test?
+
+```{r, cache=FALSE, error=FALSE, message=FALSE, warning=FALSE, comment=FALSE, echo=FALSE}
+# ALDEx of all
+d.aldex <- data.frame(d.agg.gt0)
+conds <- c(rep("S", 48), rep("W",48))
+x <- aldex.clr(d.aldex, mc.samples=16)
+x.e <- aldex.effect(x, conds, verbose=FALSE)
+x.t <- aldex.ttest(x, conds)
+aldex.de <- rownames(x.t)[which(x.t$wi.eBH < 0.05)]
+
+# ALDEx of good
+conds.g <- c(rep("S", length(grep("SNF", good))), rep("W", length(grep("WT", good))))
+d.aldex.g <- data.frame(d.good.gt0)
+x.g <- aldex.clr(d.aldex.g, mc.samples=16)
+x.e.g <- aldex.effect(x.g, conds.g, verbose=FALSE)
+x.t.g <- aldex.ttest(x.g, conds.g)
+
+# ALDEx of bad
+conds.b <- c(rep("S", length(grep("SNF", bad))), rep("W", length(grep("WT", bad))))
+d.aldex.b <- data.frame(d.agg.gt0[,bad])
+x.b <- aldex.clr(d.aldex.b, mc.samples=16)
+x.e.b <- aldex.effect(x.b, conds.b, verbose=FALSE)
+x.t.b <- aldex.ttest(x.b, conds.b)
+
+# put a Venn diagram above each plot
+#
+
+# use effect of 2 as the cutoff
+sig.all <- rownames(x.e)[which(abs(x.e$effect) >=2 & x.e$overlap < 0.01)  ]
+sig.g <- rownames(x.e.g)[which(abs(x.e.g$effect) >=2& x.e.g$overlap < 0.01)  ]
+sig.b <- rownames(x.e.b)[which(abs(x.e.b$effect) >=2& x.e.b$overlap < 0.01)  ]
+
+b_not_a <- setdiff(sig.b, sig.all) # what is in bad but not all
+g_not_a <- setdiff(sig.g, sig.all) # what is in good but not all
+
+par(mfrow=c(1,2))
+plot(x.e$diff.win, x.e$diff.btw, col=rgb(0,0,0,0.2), main=("All+Good"))
+points(x.e[sig.all,"diff.win"], x.e[sig.all,"diff.btw"], pch=19,col=rgb(1,0,0,0.2))
+points(x.e[g_not_a,"diff.win"], x.e[g_not_a,"diff.btw"], pch=19,col=rgb(0,1,0,0.5))
+#points(x.e$diff.win[x.e$rab.all < -5], x.e$diff.btw[x.e$rab.all < -5], pch=19, col="black")
+abline(0,2)
+abline(0,-2)
+
+plot(x.e$diff.win, x.e$diff.btw, col=rgb(0,0,0,0.2), main=("All+Bad"))
+points(x.e[sig.all,"diff.win"], x.e[sig.all,"diff.btw"], pch=19,col=rgb(1,0,0,0.2))
+points(x.e[b_not_a,"diff.win"], x.e[b_not_a,"diff.btw"], pch=19,col=rgb(0,1,0,0.5))
+#points(x.e.b$diff.win[x.e.b$rab.all < -5], x.e.b$diff.btw[x.e.b$rab.all < -5], pch=19, col="black")
+abline(0,2)
+abline(0,-2)
+
+
+### p value cutoffs
+# use effect of 2 as the cutoff
+sig.all.we <- rownames(x.e)[which(x.t$we.eBH <=0.01)  ]
+sig.g.we <- rownames(x.e.g)[which(x.t.g$we.eBH <=0.01)  ]
+sig.b.we <- rownames(x.e.b)[which(x.t.b$we.eBH <=0.01) ]
+
+b_not_a <- setdiff(sig.b.we, sig.all.we) # what is in bad but not all
+g_not_a <- setdiff(sig.g.we, sig.all.we) # what is in good but not all
+
+par(mfrow=c(1,2))
+plot(x.e$diff.win, x.e$diff.btw, col=rgb(0,0,0,0.2), main=("All+Good P"))
+points(x.e[sig.all.we,"diff.win"], x.e[sig.all.we,"diff.btw"], pch=19,col=rgb(1,0,0,0.2))
+points(x.e[g_not_a,"diff.win"], x.e[g_not_a,"diff.btw"], pch=19,col=rgb(0,1,0,0.5))
+#points(x.e$diff.win[x.e$rab.all < -5], x.e$diff.btw[x.e$rab.all < -5], pch=19, col="black")
+abline(0,1)
+abline(0,-1)
+
+plot(x.e$diff.win, x.e$diff.btw, col=rgb(0,0,0,0.2), main=("All+Bad P"))
+points(x.e[sig.all.we,"diff.win"], x.e[sig.all.we,"diff.btw"], pch=19,col=rgb(1,0,0,0.2))
+points(x.e[b_not_a,"diff.win"], x.e[b_not_a,"diff.btw"], pch=19,col=rgb(0,1,0,0.5))
+#points(x.e.b$diff.win[x.e.b$rab.all < -5], x.e.b$diff.btw[x.e.b$rab.all < -5], pch=19, col="black")
+abline(0,1)
+abline(0,-1)
+
+
+par(mfrow=c(1,3))
+plot(x.e$rab.all, x.e$diff.win, pch=19, col=rgb(0,0,0,0.2))
+plot(x.e.g$rab.all, x.e.g$diff.win, pch=19, col=rgb(0,0,0,0.2))
+plot(x.e.b$rab.all, x.e.b$diff.win, pch=19, col=rgb(0,0,0,0.2))
+
+
+# changing from 16 to 128 had minimal effect
+```
+As we can see here the primary effect of including samples that contribute a lot of variance is to reduce power. This is shown in two ways. The top plot uses effect sizes, which is a more stable estimate of difference between groups than P values. The green circles are what is found in the good (or bad) dataset, that was not found in the entire dataset. You can see that the good dataset gets more genes with effects greater than 2, and the bad dataset includes more genes with effects less than 2. The entire dataset contains `r length(sig.all)` genes with an effect >=2, the clean dataset contains `r length(sig.g)`, and the removed set of samples contains `r length(sig.b)`.
+
+The next plots show the same thing for hypothesis tests, and we see here that the good (clean) dataset is providing more power, and the bad dataset has almost no power. See the Venn diagrams below.
+
+The next set of plots shows why. The variance (diff.win) is plotted vs abundance. We can see that the all and good datasets have a nice relationship between variance, and log-ratio abundance, but that the bad dataset is quite ugly. Thus, the loss of power.
+
+The first Venn diagram shows that the significant gene calls (effect > 2) from the set of all samples (A) is almost entirely contained within the clean dataset (C), and the bad dataset identifies many that are not in the all or clean dataset. The second venn shows the same picture when we use a Wilcox rank test, and the third shows what happens with a Welch's t-test. In both these cases the clean and all sets find almost the same thing, and the bad dataset has almost no power to find anything but the most obvious genes.
+
+```{r, echo=FALSE}
+#length(intersect(sig.all,sig.g))
+#length(intersect(sig.all,sig.b))
+#length(intersect(sig.b,sig.g))
+
+sig.all.wi <- rownames(x.e)[which(x.t$wi.eBH <=0.01)  ]
+sig.g.wi <- rownames(x.e.g)[which(x.t.g$wi.eBH <=0.01)  ]
+sig.b.we <- rownames(x.e.b)[which(x.t.b$we.eBH <=0.01) ]
+
+library(gplots)
+par(mfrow=c(1,3),mar=c(1,1,1,1))
+venn(list(sig.all, sig.b, sig.g))
+venn(list(sig.all.wi, sig.g.wi, sig.g.wi))
+venn(list(sig.all.we, sig.b.we, sig.g.we))
+
+```
+
+
+```{r, echo=FALSE}
+# edgeR
+library(edgeR)
+
+group.a <- factor(conds)
+y <- DGEList(counts=d.aldex, group=group.a)
+y <- calcNormFactors(y)
+design <- model.matrix(~group.a)
+y <- estimateDisp(y,design)
+fit <- glmQLFit(y,design)
+qlf <- glmQLFTest(fit,coef=2)
+deset <- topTags(qlf, n=nrow(d.aldex), sort.by="none")
+deset.df <- deset[[1]]
+
+
+# common.dispersion: estimate of the common dispersion.
+#
+# trended.dispersion: estimates of the trended dispersions.
+#
+# tagwise.dispersion: tagwise estimates of the dispersion parameter if
+#           ‘tagwise=TRUE’.
+#
+#   logCPM: the average abundance of each tag, in log average counts per
+#           million.
+#
+# prior.df: prior degrees of freedom. It is a vector when robust method
+#  prior.n: estimate of the prior weight, i.e. the smoothing parameter
+#           that indicates the weight to put on the common likelihood
+#           compared to the individual tag's likelihood.
+#
+#     span: width of the smoothing window used in estimating dispersions.
+
+group.g <- factor(conds.g)
+y.g <- DGEList(counts=d.aldex.g, group=group.g)
+y.g <- calcNormFactors(y.g)
+design.g <- model.matrix(~group.g)
+y.g <- estimateDisp(y.g,design.g)
+fit.g <- glmQLFit(y.g,design.g)
+qlf.g <- glmQLFTest(fit.g,coef=2)
+deset.g <- topTags(qlf.g, n=nrow(d.aldex.g), sort.by="none")
+deset.df.g <- deset.g[[1]]
+
+group.b <- factor(conds.b)
+y.b <- DGEList(counts=d.aldex.b, group=group.b)
+y.b <- calcNormFactors(y.b)
+design.b <- model.matrix(~group.b)
+y.b <- estimateDisp(y.b,design.b)
+fit.b <- glmQLFit(y.b,design.b)
+qlf.b <- glmQLFTest(fit.b,coef=2)
+deset.b <- topTags(qlf.b, n=nrow(d.aldex.b), sort.by="none")
+deset.df.b <- deset.b[[1]]
+
+par(mfrow=c(1,2))
+sig <- which(deset.df$FDR < 0.05)
+plot(deset.df$logCPM, deset.df$logFC, pch=19, cex=0.5, col=rgb(0,0,0,0.3), main="All")
+points(deset.df$logCPM[sig], deset.df$logFC[sig], cex=0.5, col="red")
+
+
+sig <- which(deset.df.b$FDR < 0.05)
+plot(deset.df.b$logCPM, deset.df.b$logFC, pch=19, cex=0.5, col=rgb(0,0,0,0.3), main="Bad")
+points(deset.df.b$logCPM[sig], deset.df.b$logFC[sig], cex=0.5, col="red")
+
+edgeR.de <- rownames(deset.df)[which(deset.df$FDR < 0.05)]
+aldex.de <- rownames(x.t)[which(x.t$we.eBH < 0.05)]
+
+edgeR.g.de <- rownames(deset.df.g)[which(deset.df.g$FDR < 0.05)]
+aldex.g.de <- rownames(x.t.g)[which(x.t.g$we.eBH < 0.05)]
+
+edgeR.b.de <- rownames(deset.df.b)[which(deset.df.b$FDR < 0.05)]
+aldex.b.de <- rownames(x.t.b)[which(x.t.b$we.eBH < 0.05)] #use welche's here
+
+par(mfrow=c(1,3), mar=c(1,1,1,1))
+venn(list(edgeR.de, aldex.de))
+venn(list(edgeR.g.de, aldex.g.de))
+venn(list(edgeR.b.de, aldex.b.de))
+```
+Finally, lets look at edgeR. The top plot shows that there are lots of genes with adjusted P less than 0.05 in the entire dataset, and a lot fewer in the bad dataset. We can get a better idea using Venn diagrams, and the three Venn diagrams show what we see for the all, good and bad datasets using edgeR (A) and ALDEx2 (B). Thus, in this idealized dataset, we are finding almost the same stuff with two tools with completely different assumptions. Hurray! If they did not agree, then you need to decide. However, it is important to point out that ALDEx2 has very few assumptions, and they are weak, whereas edgeR (DESeq) contain many strong assumptions. In stats, the fewer and weaker the assumptions you have to make, the generally more widely useful a tool is.
+
+```{r, echo=FALSE}
+#################################
+### Phi
+#### Plot a heatmap of matrix M, row and column ordered according to M.hc
+##plot.heat <- function(M, M.hc){
+##  image(
+##    M[M.hc$order, M.hc$order],
+##    breaks=quantile(M, seq(0,1,0.1)),
+##    col=(heat.colors(10)),
+##    useRaster=TRUE, yaxt="n", xaxt="n", asp=1, bty="n"
+##  )
+##}
+##
+##source("/Users/ggloor/git/proprBayes/R/propr-functions.R")
+##
+### phi needs data by row which is what we have in d.agg.n0.clr
+##
+### symmetric phi
+##d.sym.phi <- propr.phisym(d.agg.n0.clr)
+##
+##lt                 <- which(col(d.sym.phi)<row(d.sym.phi),arr.ind=FALSE)
+##lt.ind             <- which(col(d.sym.phi)<row(d.sym.phi),arr.ind=TRUE)
+##
+##Rel.sma.df         <- data.frame(
+##  row=factor(rownames(d.sym.phi)[lt.ind[,"row"]]),
+##  col=factor(colnames(d.sym.phi)[lt.ind[,"col"]])
+##  )
+##Rel.sma.df$phi <- d.sym.phi[lt]
+##Rel.sma.lo.ken <- subset(Rel.sma.df, phi < 0.01)
+### this is all the graphing functions from igraph
+### make the graph
+##g              <- graph.data.frame(Rel.sma.lo.ken, directed=TRUE)
+##
+##g.clust     <- clusters(g) # group
+##g.df        <- data.frame(
+##  Systematic.name=V(g)$name,
+##  cluster=g.clust$membership,
+##  cluster.size=g.clust$csize[g.clust$membership]
+##  )
+##g.clust$csize # get the list of cluster sizes
+### cluster of size N, for example
+##
+### plot graphs of cluster size N
+##N=2
+##g.N <- induced.subgraph(
+##  g, which(g.clust$membership %in% which(g.clust$csize == N))
+##  )
+##g.N.names <- V(g.N)$name
+##g.N.edge <- round(E(g.N)$phi, 3)
+##par(mfrow=c(1,1))
+##plot(
+##  g.N,
+##  #layout=layout.fruchterman.reingold.grid(g.N, weight=0.05/E(g.8)$phi),
+##  layout=layout.kamada.kawai(g.N, weight=0.05/E(g.N)$phi),
+##  vertex.size=5, vertex.label.cex=0.7, vertex.color=rgb(0,0,0,0.2),
+##  edge.color="gray"#, edge.label.cex=0.6, edge.label = g.N.edge
+##)
+##
+##
+##
+### remove variables that have a minimum phi-value greater than a cutoff
+### i.e. remove variables that just contribute noise to the system
+##d.sym.phi[d.sym.phi == 0] <- 5
+##d.not_corr <- d.agg.gt0[which(apply(d.sym.phi, 2, min) < 0.1),]
+### estimate 0 values (zCompositions)
+##ifelse (min(d.not_corr) == 0,
+##d.agg.n0 <- cmultRepl(t(d.not_corr), method="CZM", label=0, output="counts"),
+##d.agg.n0 <- t(d.not_corr) )
+##
+### clr transform
+##d.agg.n0.clr <- t(apply(d.agg.n0, 1, function(x){log2(x) - mean(log2(x))}))
+##
+### SVD and metric variance
+##pcx.agg <- prcomp(d.agg.n0.clr)
+##
+##mvar.agg.clr <- mvar(d.agg.n0.clr)
+##
+##biplot(pcx.agg, cex=c(0.3,0.4), var.axes=FALSE,
+##    xlab=paste("PC1: ", round(sum(pcx.agg$sdev[1]^2)/mvar.nc, 3)),
+##    ylab=paste("PC2: ", round(sum(pcx.agg$sdev[2]^2)/mvar.nc, 3)),
+##    scale=1)
+##
+##
+######################################
+### k-means clustering
+### strongly suggests 2 groups
+##
+##layout( matrix(c(1,2,3,4),2,2, byrow=T), widths=c(10,10), height=c(10,10))
+##
+##par(mar=c(5,4,0,5)+0.1)
+##
+### this is the sum of squares distance plot
+##plot(1:15, wss[1:15], type="b", xlab="Number of Clusters",
+##    ylab="Win Grp SS")
+##
+##par(mar=c(2,0,2,0)+0.1)
+##
+##fit <- kmeans(mydata,2) # fit to 2 clusters
+##mydata$fit.cluster <- NULL # clear any previous data
+##mydata <- data.frame(mydata, fit$cluster) # add the cluster data
+##
+##coloredBiplot(pcx,col=rgb(0,0,0,0.2),cex=c(0.8,0.2),
+## xlab=paste("PC1: ", round(sum(pcx$sdev[1]^2)/mvar.clr, 3), sep=""),
+## ylab=paste("PC2: ", round(sum(pcx$sdev[2]^2)/mvar.clr, 3), sep=""),
+## xlabs.col=mydata$fit.cluster, arrow.len=0.05, var.axes=F, expand=0.8,  scale=0)
+##
+##fit <- kmeans(mydata,3) # fit to 2 clusters
+##mydata$fit.cluster <- NULL # clear any previous data
+##mydata <- data.frame(mydata, fit$cluster) # add the cluster data
+##
+##coloredBiplot(pcx,col=rgb(0,0,0,0.2),cex=c(0.8,0.2),
+## xlab=paste("PC1: ", round(sum(pcx$sdev[1]^2)/mvar.clr, 3), sep=""),
+## ylab=paste("PC2: ", round(sum(pcx$sdev[2]^2)/mvar.clr, 3), sep=""),
+## xlabs.col=mydata$fit.cluster, arrow.len=0.05, var.axes=F, expand=0.8,  scale=0)
+##
+##fit <- kmeans(mydata,4) # fit to 2 clusters
+##mydata$fit.cluster <- NULL # clear any previous data
+##mydata <- data.frame(mydata, fit$cluster) # add the cluster data
+##
+##coloredBiplot(pcx,col=rgb(0,0,0,0.2),cex=c(0.8,0.2),
+## xlab=paste("PC1: ", round(sum(pcx$sdev[1]^2)/mvar.clr, 3), sep=""),
+## ylab=paste("PC2: ", round(sum(pcx$sdev[2]^2)/mvar.clr, 3), sep=""),
+## xlabs.col=mydata$fit.cluster, arrow.len=0.05, var.axes=F, expand=0.8,  scale=0)
+##```
