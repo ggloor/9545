@@ -1,0 +1,58 @@
+----------------------------------------------------------------------------
+        UniProt - Swiss-Prot Protein Knowledgebase
+        SIB Swiss Institute of Bioinformatics; Geneva, Switzerland
+        European Bioinformatics Institute (EBI); Hinxton, United Kingdom
+        Protein Information Resource (PIR); Washington DC, USA
+----------------------------------------------------------------------------
+
+Description: Yeast (Saccharomyces cerevisiae): entries, gene names and
+             cross-references to SGD
+Name:        yeast.txt
+Release:     2015_11 of 11-Nov-2015
+
+----------------------------------------------------------------------------
+
+This documents lists all the Saccharomyces cerevisiae S288c entries present in
+this release of UniProtKB/Swiss-Prot.
+
+More information on Saccharomyces cerevisiae, its genome, biology and
+genetics, is available from the following WWW pages:
+
+SGD   : http://www.yeastgenome.org/
+NCBI  : http://www.ncbi.nlm.nih.gov/mapview/map_search.cgi?taxid=4932
+YPM   : http://www.ibgc.u-bordeaux2.fr/YPM/
+
+For each entry we provide the following information:
+
+1) Gene designations
+
+   In this field, we provide  the "primary" gene name (the first one used in
+   the GN line of the relevant Swiss-Prot entry  and  the name used in SGD);
+   all the known synonyms and  the ORF  names  used by the genome sequencing
+   projects.
+
+2) Ordered locus name (OLN)
+
+3) Swiss-Prot primary accession number
+
+4) Swiss-Prot entry name
+
+5) SGD accession number
+
+6) Length of the sequence
+
+   The length of the sequence  (number of amino  acids) listed in  the table
+   is that of  the probable  gene  product  before  any   post-translational
+   processing (removal of initiator methionine, signal sequence, etc.).
+
+7) 3D-structure flag
+
+   If the 3D-structure of a Yeast protein has been solved, the flag "(3)" is
+   present in the table.
+
+8) Chromosome localization
+
+__________________________________________________________________________ ___________________ __________ ___________ __________  ____ ___ __
+Gene designations                                                          OLN                 Swiss-Prot             SGD         Size 3D  CH
+                                                                                               AC         Entry       X-ref.
+__________________________________________________________________________ ___________________ __________ ___________ __________  ____ ___ __

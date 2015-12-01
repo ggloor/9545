@@ -1,0 +1,82 @@
+library(igraph)
+
+sma.df <- function(df){
+df.cor <- stats::cor(df, use="pairwise.complete.obs")
+df.var <- stats::cov(df, use="pairwise.complete.obs")
+df.sd <- sqrt(diag(df.var))
+r.rf2 <-
+    (outer(diag(df.var), diag(df.var), "-")^2 ) /
+    (outer(diag(df.var), diag(df.var), "+")^2 - 4 * df.var^2 )
+ diag(r.rf2) <- 0
+  res.dof     <- nrow(df) - 2
+  F           <- r.rf2/(1 - r.rf2) * res.dof
+list(b=sign(df.cor) * outer(df.sd, df.sd, "/"),
+p=1 - pf(F, 1, res.dof),
+r2=df.cor^2)
+}
+
+lt.row.min <- function(X){
+
+  result <- numeric(nrow(X) - 1)
+
+  for(i in 2:nrow(X)){
+
+    result[i-1] <- min(X[i, 1:i-1])
+
+  }
+
+  result
+
+}
+
+
+propr.phisym <- function (X)
+{
+ Cov    <- stats::var(X)
+ tmp    <- 2 * Cov / outer(diag(Cov), diag(Cov), "+")
+ return((1-tmp)/(1+tmp))
+}
+
+agee.clr <- as.data.frame(t(apply(agee, 1, function(x){log(x) - mean(log(x))})))
+
+
+agee.sym.phi <- propr.phisym(agee.clr)
+
+
+agee.sma <- sma.df(agee.clr)
+
+
+
+lt <- which(col(agee.sma$b)<row(agee.sma$b), arr.ind=FALSE)
+lt.ind <- which(col(agee.sma$b)<row(agee.sma$b), arr.ind=TRUE)
+
+
+agee.phi.min <- lt.row.min(agee.sym.phi)
+
+agee.sma.df <- data.frame(row=factor(rownames(agee.sma$b)[lt.ind[,"row"]]), col=factor(colnames(agee.sma$b)[lt.ind[,"col"]]))
+agee.sma.df$b <- agee.sma$b[lt]
+agee.sma.df$p <- agee.sma$p[lt]
+agee.sma.df$r2 <- agee.sma$r2[lt]
+agee.sma.df$phi <- agee.sym.phi[lt]
+
+agee.sma.lo.phi <- subset(agee.sma.df, phi<0.025)
+
+
+g <- graph.data.frame(agee.sma.lo.phi, directed=FALSE)
+# plot(g, layout=layout.fruchterman.reingold.grid(g, weight=0.05/E(g)$phi), vertex.size=1, vertex.color="black", vertex.label=NA)
+
+g.clust <- clusters(g)
+g.df <- data.frame(Systematic.name=V(g)$name, cluster=g.clust$membership, cluster.size=g.clust$csize[g.clust$membership])
+
+g.max <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == max(g.clust$csize))))
+
+g.max.names <- V(g.max)$name
+
+g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 10)))
+
+plot(g.max, layout=layout.fruchterman.reingold.grid(g.max, weight=0.05/E(g.max)$phi), vertex.size=3, vertex.color="white")
+
+plot(g.10, layout=layout.fruchterman.reingold.grid(g.10, weight=0.05/E(g.10)$phi), vertex.size=3, vertex.color="white")
+
+g.clust$csize
+
