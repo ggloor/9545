@@ -1,3 +1,4 @@
+source("~/git/proprBayes/R/propr-functions.R")
 library(igraph)
 
 sma.df <- function(df){
@@ -37,32 +38,32 @@ propr.phisym <- function (X)
  return((1-tmp)/(1+tmp))
 }
 
-agee.clr <- as.data.frame(t(apply(agee, 1, function(x){log(x) - mean(log(x))})))
+d.agg.n0.clr <- as.data.frame(t(apply(d.agg.n0, 1, function(x){log(x) - mean(log(x))})))
 
 
-agee.sym.phi <- propr.phisym(agee.clr)
+d.agg.n0.sym.phi <- propr.phisym(d.agg.n0.clr)
 
 
-agee.sma <- sma.df(agee.clr)
+d.agg.n0.sma <- sma.df(d.agg.n0.clr)
 
 
 
-lt <- which(col(agee.sma$b)<row(agee.sma$b), arr.ind=FALSE)
-lt.ind <- which(col(agee.sma$b)<row(agee.sma$b), arr.ind=TRUE)
+lt <- which(col(d.agg.n0.sma$b)<row(d.agg.n0.sma$b), arr.ind=FALSE)
+lt.ind <- which(col(d.agg.n0.sma$b)<row(d.agg.n0.sma$b), arr.ind=TRUE)
 
 
-agee.phi.min <- lt.row.min(agee.sym.phi)
+d.agg.n0.phi.min <- lt.row.min(d.agg.n0.sym.phi)
 
-agee.sma.df <- data.frame(row=factor(rownames(agee.sma$b)[lt.ind[,"row"]]), col=factor(colnames(agee.sma$b)[lt.ind[,"col"]]))
-agee.sma.df$b <- agee.sma$b[lt]
-agee.sma.df$p <- agee.sma$p[lt]
-agee.sma.df$r2 <- agee.sma$r2[lt]
-agee.sma.df$phi <- agee.sym.phi[lt]
+d.agg.n0.sma.df <- data.frame(row=factor(rownames(d.agg.n0.sma$b)[lt.ind[,"row"]]), col=factor(colnames(d.agg.n0.sma$b)[lt.ind[,"col"]]))
+d.agg.n0.sma.df$b <- d.agg.n0.sma$b[lt]
+d.agg.n0.sma.df$p <- d.agg.n0.sma$p[lt]
+d.agg.n0.sma.df$r2 <- d.agg.n0.sma$r2[lt]
+d.agg.n0.sma.df$phi <- d.agg.n0.sym.phi[lt]
 
-agee.sma.lo.phi <- subset(agee.sma.df, phi<0.025)
+d.agg.n0.sma.lo.phi <- subset(d.agg.n0.sma.df, phi<0.025)
 
 
-g <- graph.data.frame(agee.sma.lo.phi, directed=FALSE)
+g <- graph.data.frame(d.agg.n0.sma.lo.phi, directed=FALSE)
 # plot(g, layout=layout.fruchterman.reingold.grid(g, weight=0.05/E(g)$phi), vertex.size=1, vertex.color="black", vertex.label=NA)
 
 g.clust <- clusters(g)
@@ -72,9 +73,9 @@ g.max <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize =
 
 g.max.names <- V(g.max)$name
 
-g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 10)))
+g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 9)))
 
-plot(g.max, layout=layout.fruchterman.reingold.grid(g.max, weight=0.05/E(g.max)$phi), vertex.size=3, vertex.color="white")
+#plot(g.max, layout=layout.fruchterman.reingold.grid(g.max, weight=0.05/E(g.max)$phi), vertex.size=3, vertex.color="white")
 
 plot(g.10, layout=layout.fruchterman.reingold.grid(g.10, weight=0.05/E(g.10)$phi), vertex.size=3, vertex.color="white")
 
