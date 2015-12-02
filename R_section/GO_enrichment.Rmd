@@ -55,11 +55,17 @@ aldex.all.down.uniprot <- aldex.all.down.uniprot.na[!is.na(aldex.all.down.unipro
 
 aldex.all.uniprot <- c(aldex.all.down.uniprot, aldex.all.up.uniprot)
 
-bg <- c(rep("pink", length(aldex.all.down.uniprot)), rep("cyan", length(aldex.all.up.uniprot)) )
+bg <- c(rep("red", length(aldex.all.down.uniprot)), rep("blue", length(aldex.all.up.uniprot)) )
 
 aldex.2 <- cbind(aldex.all.uniprot, bg)
 
+# use this for KEGG
 write.table(aldex.2, file="aldex.effect2.txt", row.names=F, quote=F)
+
+# use this for GO
+write.table(aldex.all.up.uniprot, file="aldex.all.up.txt", row.names=F, quote=F)
+
+phi.test <- as.vector(cor.table[g.10.names,2])
 
 ```
 ### Generate the dataset

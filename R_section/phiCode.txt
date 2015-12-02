@@ -1,5 +1,10 @@
+# I have placed this script in the directory
+# change the path accordingly
 source("~/git/proprBayes/R/propr-functions.R")
 library(igraph)
+
+###########
+# these are functins that you will need. Copy and paste into the console
 
 sma.df <- function(df){
 df.cor <- stats::cor(df, use="pairwise.complete.obs")
@@ -37,51 +42,63 @@ propr.phisym <- function (X)
  tmp    <- 2 * Cov / outer(diag(Cov), diag(Cov), "+")
  return((1-tmp)/(1+tmp))
 }
+############ end functions
+##
 
+# this is the variable from line 103 of explore_RNA-seq.Rmd
 d.agg.n0.clr <- as.data.frame(t(apply(d.agg.n0, 1, function(x){log(x) - mean(log(x))})))
 
-
+# generate the phi statistic
 d.agg.n0.sym.phi <- propr.phisym(d.agg.n0.clr)
 
-
+# generate a symmetrical regression line of best fit
 d.agg.n0.sma <- sma.df(d.agg.n0.clr)
 
-
-
+# make an empty dataset of the correct size
 lt <- which(col(d.agg.n0.sma$b)<row(d.agg.n0.sma$b), arr.ind=FALSE)
 lt.ind <- which(col(d.agg.n0.sma$b)<row(d.agg.n0.sma$b), arr.ind=TRUE)
 
-
+# find the minimum value of each row
 d.agg.n0.phi.min <- lt.row.min(d.agg.n0.sym.phi)
 
+# dataframe to hold the info,
+# data is a set of vectors where only the lower triangle is kept, because the matrix is symmetrical
+# this is needed so the subset function works properly
 d.agg.n0.sma.df <- data.frame(row=factor(rownames(d.agg.n0.sma$b)[lt.ind[,"row"]]), col=factor(colnames(d.agg.n0.sma$b)[lt.ind[,"col"]]))
 d.agg.n0.sma.df$b <- d.agg.n0.sma$b[lt]
 d.agg.n0.sma.df$p <- d.agg.n0.sma$p[lt]
 d.agg.n0.sma.df$r2 <- d.agg.n0.sma$r2[lt]
 d.agg.n0.sma.df$phi <- d.agg.n0.sym.phi[lt]
 
+# find the set of connections with phi less than some value
 d.agg.n0.sma.lo.phi <- subset(d.agg.n0.sma.df, phi<0.015)
 
-
+# generate a graphical object
 g <- graph.data.frame(d.agg.n0.sma.lo.phi, directed=FALSE)
-# plot(g, layout=layout.fruchterman.reingold.grid(g, weight=0.05/E(g)$phi), vertex.size=1, vertex.color="black", vertex.label=NA)
 
+# overview of all the proportional relationships
+# this can take a long time!!!
+ plot(g, layout=layout.fruchterman.reingold.grid(g, weight=0.05/E(g)$phi), vertex.size=1, vertex.color="black", vertex.label=NA)
+
+# get the clusters from the graph object
 g.clust <- clusters(g)
+
+# data frame containing the names and group memberships of each cluster
 g.df <- data.frame(Systematic.name=V(g)$name, cluster=g.clust$membership, cluster.size=g.clust$csize[g.clust$membership])
 
-g.max <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == max(g.clust$csize))))
+# to see the sized of clusters in the dataset (i.e., the number of members in clusters)
+g.clust$csize
 
-g.max.names <- V(g.max)$name
+# make a subgraph object for later plotting with a specific cluster size
 
-g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 7)))
+g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 29)))
+# get the names
 g.10.names <- V(g.10)$name
 
-#plot(g.max, layout=layout.fruchterman.reingold.grid(g.max, weight=0.05/E(g.max)$phi), vertex.size=3, vertex.color="white")
+plot(g.10, layout=layout.fruchterman.reingold.grid(g.10, weight=0.05/E(g.10)$phi), vertex.size=3, vertex.color="white")
 
-#plot(g.10, layout=layout.fruchterman.reingold.grid(g.10, weight=0.05/E(g.10)$phi), vertex.size=3, vertex.color="white")
-
-#g.clust$csize
-
+# generate a variance variance plot with the clusters overlaid
+# this is the aldex_all.txt data.
 plot(x.all$diff.win, x.all$diff.btw, pch=19,cex=0.3)
 points(x.all[g.10.names,"diff.win"], x.all[g.10.names,"diff.btw"], pch=19, col="red", cex=0.4)
 abline(0,2)
