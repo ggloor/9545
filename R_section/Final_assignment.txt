@@ -1,0 +1,21 @@
+Final assignment
+
+Due Dec 11th at 5PM. Please hand in as a markdown document as before. Feel free to generate and include intermediate result files if needed, as long as all code is included.
+
+I will mark both your coding and commenting (1/3) and your figures and narrative (2/3) that answer the following questions. Feel free to set echo=FALSE so the narrative flows. I can read the raw markdown document for the coding part.
+
+We will examine historical datasets: the "Bottomly dataset", and the Mortazavi datasets
+
+They can be obtained from http://bowtie-bio.sourceforge.net/recount/. You will need the count and the phenotype tables to do this assignment. The original papers can be found by following the PMID links.
+
+These datasets are of use to illustrate several of the analyses that we have done over the course of the class. Good luck and have fun!
+
+Part1: Evaluate the technical replication in the Mortazavi dataset. Is the technical or biological difference greater? Explain your evidence. Based on this, make a recommendation to the investigators about which technical replicates to keep for the full analysis. (do not analyze further)
+
+Part 2: Evaluate the biological variation in the Bottomly dataset. Is there evidence of outliers, or other confounding issues in this dataset? Based on this, and the experimental design outlined in the paper, which samples would it be useful to examine if you made a reduced dataset?
+
+Part 3: using the entire dataset generate a list of genes with correlated ratios using the phi metric.
+
+Part 4: Using the entire dataset, generate the set of biologically and statistically significant genes with both edgeR and ALDEx2. Defend your choice of cutoffs and methods. What is the overlap between them when you choose compatible approaches (i.e, similar statistical tests)
+
+Part 5: Using GO, identify the major different functions and processes between the brain striatum of the two mouse strains. Does this result make biological sense? Examine highly correlated gene sets by GO. Can you find examples where the correlations follow the GO annotations, and where they are discordant? Explain why this may happen (best guess).
