@@ -60,7 +60,7 @@ d.agg.n0.sma.df$p <- d.agg.n0.sma$p[lt]
 d.agg.n0.sma.df$r2 <- d.agg.n0.sma$r2[lt]
 d.agg.n0.sma.df$phi <- d.agg.n0.sym.phi[lt]
 
-d.agg.n0.sma.lo.phi <- subset(d.agg.n0.sma.df, phi<0.025)
+d.agg.n0.sma.lo.phi <- subset(d.agg.n0.sma.df, phi<0.015)
 
 
 g <- graph.data.frame(d.agg.n0.sma.lo.phi, directed=FALSE)
@@ -73,11 +73,17 @@ g.max <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize =
 
 g.max.names <- V(g.max)$name
 
-g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 9)))
+g.10 <- induced.subgraph(g, which(g.clust$membership %in% which(g.clust$csize == 7)))
+g.10.names <- V(g.10)$name
 
 #plot(g.max, layout=layout.fruchterman.reingold.grid(g.max, weight=0.05/E(g.max)$phi), vertex.size=3, vertex.color="white")
 
-plot(g.10, layout=layout.fruchterman.reingold.grid(g.10, weight=0.05/E(g.10)$phi), vertex.size=3, vertex.color="white")
+#plot(g.10, layout=layout.fruchterman.reingold.grid(g.10, weight=0.05/E(g.10)$phi), vertex.size=3, vertex.color="white")
 
-g.clust$csize
+#g.clust$csize
+
+plot(x.all$diff.win, x.all$diff.btw, pch=19,cex=0.3)
+points(x.all[g.10.names,"diff.win"], x.all[g.10.names,"diff.btw"], pch=19, col="red", cex=0.4)
+abline(0,2)
+abline(0,-2)
 
