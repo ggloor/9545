@@ -1,0 +1,62 @@
+---
+title: "final assignment"
+author: "gg"
+date: "`r Sys.Date()`"
+fig_caption: true
+output: pdf_document
+---
+
+To run this file:
+Rscript -e "rmarkdown::render('final.Rmd')"
+
+Exploratory data analysis to determine if  replication is tight in the Bottomly dataset
+
+try a couple of scatter plots, and then a biplot
+
+```{r setup, echo=FALSE, message=FALSE}
+# load the compositional framework
+library(compositions)
+library(zCompositions)
+library(ALDEx2)
+source("~/git/compositions/CoDaMicro/chunk/codaMB_functions.R")
+
+# this is the metadata
+meta <- read.table("~/Documents/LaTeX/445/9545_fall2015/final_R/bottomly_phenodata.txt", row.names=1,
+    header=T)
+
+# this is the table of counts
+d <- read.table("~/Documents/LaTeX/445/9545_fall2015/final_R/bottomly_count_table.txt", header=T, row.names=1)
+
+```
+first reduce the dataset since there are `r nrow(d)` genes. This is a lot, and there is no need to keep them all.
+
+```{r biplot, echo=TRUE, message=FALSE, warning=FALSE}
+# reduce the dataset
+# keep genes that are in at least 40% of the samples
+# keep genes that with a frequency across any sample of at least 1/1e-6
+ d.filter <- codamb.filter(d, min.prop=1e-6, min.fraction=0.4, samples.by.row=FALSE)
+
+# clr transform the data with a uniform prior(rough first pass)
+d.clr <- t(apply(d.filter+0.5,2, function(x){log(x) - mean(log(x))}))
+pcx <- prcomp(d.clr)
+mv <- mvar(d.clr)
+# basically only two components
+plot(pcx$sdev^2/mv, type="b")
+
+# the samples are very clumpy and
+# the samples can be seen to cluster by experiment number
+# experiment 4 is very different than experiment 6 and 7
+#
+plot(pcx$x[,1], pcx$x[,2], pch=paste(meta$experiment.number, sep=""), xlab=round(pcx$sdev[1]^2/mv,2), ylab=round(pcx$sdev[2]^2/mv,2))
+
+# we can also plot the contribution of each sample to the mvar and we see that both the groups are bimodal
+
+# so yes, there is a lot of structure in the data that is not anticipated and will confound later analyses. The best thing to do would be to only use the 6/7 sample sets. They are much tighter. We will persevere with the analysis as is.
+```
+The reduced dataset contains `r nrow(d.filter)`, which is more manageable and really should not decrease power that much.
+
+On to phi!
+
+```{r phi, echo=TRUE}
+
+```

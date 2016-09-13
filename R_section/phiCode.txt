@@ -1,6 +1,6 @@
 # I have placed this script in the directory
 # change the path accordingly
-source("~/git/proprBayes/R/propr-functions.R")
+source("~/git/propr/R/propr-functions.R")
 library(igraph)
 
 ###########
