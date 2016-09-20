@@ -1,0 +1,44 @@
+---
+title: "Assignment 1"
+author: "gg"
+date: "September 21, 2016"
+output: html_document
+---
+# Assignment 1
+Please hand this in as an .Rmd document, and I will convert it to html or pdf for marking
+
+The three parts are worth equal weight.
+
+In parts 1 all of your mark will be on your comments, I need to know that you understand the basics of R and how the code is working. You are really writing for your future self, so it should be easy to separate the code from the comments. Place general comments about what you are trying to accomplish outside of the R code itself. Place specific comments about functions inside the R code. Good commenting is difficult. The comments must be enough to get the gist of the code, but not intrusive.
+
+In part 2, one third of your mark comes from comments in your code.
+
+#### Question 1: Comment this code using your own words
+
+x <- matrix(data=NA, nrow=100, ncol=10)
+for(i in 1:100){
+  min=floor(runif(1, min=0, max=25))
+  x[i,] <- floor(runif(10, min=min, max=min* 5))
+}
+
+filter <- function(x, min.reads=1000, min.prop=0.01,
+  min.occurrence=0, samples.by.row=FALSE){
+  if(samples.by.row==FALSE) data <- x
+  if(samples.by.row==TRUE) data <- t(x)
+  data.0 <- data[,which(apply(data,2,sum) > min.reads)]
+
+  d.frac <- apply(data.0, 2, function(x){x/sum(x)})
+  data.1 <- data.0[which(apply(d.frac, 1, max) > min.prop),]
+  rm(d.frac)
+
+  data.2 <- data.frame(data.1[which(apply(data.1, 1,
+    function(x){length(which(x != 0))/length(x)}) > min.occurrence),])
+
+  return( data.2 )
+}
+
+#### Question 2: demonstrate graphically what the filter() function is doing
+
+Include your commented code, and any graphs.
+
+#### Question 3: Why is an effect size measure more reliable, and more biologically relevant, than a p-value. Keep your answer within one printed page, not including references and figures. You may use up to two figures to support your reasoning.
