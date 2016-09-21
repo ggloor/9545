@@ -7,6 +7,8 @@ output: html_document
 # Assignment 1
 Please hand this in as an .Rmd document, and I will convert it to html or pdf for marking
 
+Please, Please, Please, include your name in the body of the file.
+
 The three parts are worth equal weight.
 
 In parts 1 all of your mark will be on your comments, I need to know that you understand the basics of R and how the code is working. You are really writing for your future self, so it should be easy to separate the code from the comments. Place general comments about what you are trying to accomplish outside of the R code itself. Place specific comments about functions inside the R code. Good commenting is difficult. The comments must be enough to get the gist of the code, but not intrusive.
