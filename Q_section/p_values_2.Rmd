@@ -63,11 +63,11 @@ How does the distribution change?
 What is the relationship between the data points?
 
 ```{r, echo=T}
-n.sig <- 100
+n.sig <- 25
 
 # copy r to s
 s <- r
-second.mean <- 110
+second.mean <- 150
 
 for(i in 1:breaks){ s[i,1:n.sig] <- rnorm(n.sig, mean=second.mean, sd=5) }
 
