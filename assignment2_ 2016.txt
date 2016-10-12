@@ -1,0 +1,30 @@
+For this assignment, you must write and properly annotate several functions.
+
+This assignment will be graded both on what you hand in and orally. I will schedule 10 minutes with each of you to go over your answers to ensure that you, and you alone, understand the answer to the questions.
+
+I will be available for consultation by appointment.
+
+Each will be worth equal credit. Part marks will be given.
+
+Function 1: make a function to generate a random dataset in which the function call should be able to customize the size, number of rows and columns, and the two mean values. Use the 4 lines of example code below as the base of the function
+
+size <- 10
+
+r <- matrix(data=NA, nrow=20, ncol=10)
+
+for(i in 1:10){ r[,i] <- rnorm(20, mean=100, sd=5) }
+
+for(i in 1:5){ r[1:size,i] <- rnorm(size, mean=110, sd=5) }
+
+
+Function 2: make a function to generate a scatter plot of any two user-supplied arbitrary rows for the dataset. The three inputs will be the matrix, and the two columns to plot
+
+Part 3: using existing functions and loops
+convert the variable r to a composition in two different ways. The simplest way to do this is to divide each row value by its column sum. You may choose any two of the below methods.
+
+- using a for loop
+- using apply
+- using sapply
+- using sweep
+
+Use function 2 to show that converting the matrix to a composition changes the scatter plot for two variables (rows)

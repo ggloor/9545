@@ -1,0 +1,15 @@
+---
+title: "TLA"
+author: "gg"
+date: "10/5/2016"
+output: html_document
+---
+
+The infamous tiger, ladybug space alien example
+
+```{r setup, echo=TRUE, eval=TRUE, include=TRUE}
+source("chunk4/setup.r")
+str(d)
+dim(d)
+
+```

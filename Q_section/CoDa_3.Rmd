@@ -205,7 +205,7 @@ log: logarithmic transformation as suggested by Anderson et al. (2006):
 
 ```{r lib, include=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
 library(scatterplot3d)
-library(compositions)
+#library(compositions)
 library(zCompositions)
 library(ALDEx2)
 library(igraph)
