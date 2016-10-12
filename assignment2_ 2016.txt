@@ -20,7 +20,7 @@ for(i in 1:5){ r[1:size,i] <- rnorm(size, mean=110, sd=5) }
 Function 2: make a function to generate a scatter plot of any two user-supplied arbitrary rows for the dataset. The three inputs will be the matrix, and the two columns to plot
 
 Part 3: using existing functions and loops
-convert the variable r to a composition in two different ways. The simplest way to do this is to divide each row value by its column sum. You may choose any two of the below methods.
+convert the variables in the matrix from function 1 to a composition in two different ways. The simplest way to do this is to divide each row value by its column sum. You may choose any two of the below methods.
 
 - using a for loop
 - using apply
