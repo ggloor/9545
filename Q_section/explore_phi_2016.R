@@ -16,7 +16,7 @@ f.x <- aldex.clr(f, conds)
 
 x.phi <- codaSeq.phi(f.x)
 
-phi.cutoff <- .4
+phi.cutoff <- .3
 x.lo.phi <- subset(x.phi, phi <= phi.cutoff)
 
 # generate a graphical object
