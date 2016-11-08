@@ -1,0 +1,45 @@
+1.
+Course outline
+Biochemistry 9545 Macromolecular Informatics. The course will  meet Nov 23,29,30,Dec 6 9:30-12:30.
+
+###NOTE: This is intended to be focussed largely on practical aspects of analysis
+
+2.
+Instructor: Greg Gloor, ggloor@uwo.ca, 519-661-3526 (office)
+
+3. Students will be expected to bring a functional laptop to class with the R programming environment already loaded and functional. Students should be familiar with the file system of their computer and be able to locate files associated with R on their own. Students should have a working text editor installed. For Macs this could include Textwrangler, for PCs the could include Notepad++. Students should have a copy of "Analyzing compositional data with R" loaded on their computer for reference. We will use many of the principles outlined in that book.
+
+3.
+Session 1: An introduction to high throughput sequencing approaches (how sequencing on the  illumina platform works), local resources (David Carter), design and costing experiments.
+Session 2: Obtaining an RNA-seq dataset. Where is the data? how do I get it. Now what?
+Session 3: Exploring the dataset, outlier detection, do I have a difference?
+Session 4: Differential abundance ALDEx2 and DESeq, Issues with RNA-seq
+
+Assessment 1: will be a an essay assignment critiquing an RNA-Seq analysis paper. As part of this, the student will be asked to conduct a costing for the experiment to be reproduced as reported using current techniques (25%).
+
+Assessment 2: will be a re-analysis of a dataset to determine if the paper has stood the test of time. This analysis will be done with two different RNA-seq analysis tools: DESeq2 and ALDEx2.
+	2A: I am going to mark your R scripts for completeness, comments and simplicity. This will be worth 25% of your mark
+	2B: I am going to mark your final data for how you went about comparing the results, the quality of your data analysis. This will be worth 25%
+	2C: I am going to mark your conclusions and their support in your data. Critique the original paper and be sure to explain what you would do differently given what you now know with the best technology available today. Again worth 25%
+
+The course is largely practical . Assessments are to be worked on and handed in individually. Students will be expected to conduct independent learning to practice the concepts and tools.
+
+4.
+Students will need to bring a reasonably recent laptop to class and be willing to install a number of freely available scientific software packages. Students are expected to bring a laptop with R preinstalled (http://cran.utstat.utoronto.ca). We will be learning largely the practice on how to use R and its packages for the analysis of high throughput sequencing data.
+
+readings and sources
+R installation
+http://cran.utstat.utoronto.ca
+
+5.
+All assignments are due one week after they are given. All assignments must be handed in and passed to obtain course credit.
+
+6. Statement on Academic Offences
+The statement: “Scholastic offences are taken seriously and students are directed to read the appropriate policy, specifically, the definition of what constitutes a Scholastic Offence, at the following Web site: http://www.uwo.ca/univsec/handbook/appeals/scholastic_discipline_grad.pdf
+Academic Handbook, Exam, Course Outlines Page 4 Issued: 2011 02
+
+Additionally,
+
+A) If written work will be assigned in the course and plagiarism-checking software might be used, the following statement to this effect must be included in the course outline:
+
+“All required papers may be subject to submission for textual similarity review to the commercial plagiarism-detection software under license to the University for the detection of plagiarism. All papers submitted for such checking will be included as source documents in the reference database for the purpose of detecting plagiarism of papers subsequently submitted to the system. Use of the service is subject to the licensing agreement, currently between The University of Western Ontario and Turnitin.com (http://www.turnitin.com).”
