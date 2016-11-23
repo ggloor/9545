@@ -1,5 +1,8 @@
 readings:
 
+Coming of age: ten years of next-generation sequencing technologies
+http://www.nature.com/nrg/journal/v17/n6/fig_tab/nrg.2016.49_F1.html
+
 Statistical design and analysis of RNA-sequencing data
 http://www.genetics.org/content/185/2/405.short
 
