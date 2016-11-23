@@ -1,0 +1,8 @@
+readings:
+
+Statistical design and analysis of RNA-sequencing data
+http://www.genetics.org/content/185/2/405.short
+
+Statistical models for RNA-seq data derived from a two-condition 48-replicate experiment
+https://arxiv.org/abs/1505.00588
+
