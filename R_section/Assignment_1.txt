@@ -1,0 +1,30 @@
+Assignment 1:
+
+We are using the data from a recent paper: Statistical models for RNA-seq data derived from a two-condition 48-replicate experiment
+https://arxiv.org/abs/1505.00588
+
+First, provide a review of this paper. The review should contain the following elements:
+
+1) a brief (1-2 paragraph) description of the experiment that includes the experimental design, the major methods and the major conclusions.
+
+2) A summary of what was done well in this experiment, and a summary of what was done poorly or that could be improved.
+
+3) An assessment of whether their analyses support their conclusions.
+
+Second, provide a costing for the experiment as written in the methods.
+
+Third: Provide a costing where you design the experiment and attempt to reproduce the data as efficiently as possible using current pricing and reagents. Provide a rationale for any choices that are made in platform.
+
+Current library and per-run costs for an Illumina MiSeq and NextSeq are given at: http://www.lrgc.ca/?page=fees
+
+Assume that per sample library costs are $150 since you will be using full sets of barcodes.
+
+Current per-lane costs from TCAG (Current) for an Illumina HiSeq 2500
+Each generates ~250 M reads per lane
+
+PE 2x250 nt indexed barcode run $3140
+PE 2x100 nt indexed barcode run $1900
+SE 100 nt indexed barcode run $1100
+SE 50 nt indexed barcode run $850
+
+Quality Control $100/multiplexed sample
