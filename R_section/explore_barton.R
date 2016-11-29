@@ -13,3 +13,10 @@ library(CoDaSeq)
 
 plot=FALSE
 ```
+
+```{r explore1, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='Initial exploratory PCA plot of the SNF1 KO dataset. .', fig.height=4, fig.width=14}
+
+
+
+```
+
