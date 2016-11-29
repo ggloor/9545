@@ -1,5 +1,7 @@
 Assignment 1:
 
+This will be due on Wed Dec 7 at 5PM. Please hand in by email
+
 We are using the data from a recent paper: Statistical models for RNA-seq data derived from a two-condition 48-replicate experiment
 https://arxiv.org/abs/1505.00588
 
