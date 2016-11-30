@@ -20,10 +20,12 @@ source("script/load_biplot.r")
 
 ```
 
-```{r agg, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='Initial exploratory PCA plot of the SNF2 KO dataset. .', fig.height=4, fig.width=14}
+```{r agg, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='aggregate the dataset by techrep.', fig.height=4, fig.width=14}
 
-nms.agg <- paste(m[,2], m[,3], sep=":")
+# make a vector of names concatenated with biological replicate number
+nms.agg <- paste(m[,2], m[,3], sep=".")
 
+#sum by the set of unique names
 d.agg <- aggregate(t(d), by=list(nms.agg), FUN=sum)
 rownames(d.agg) <- d.agg$Group.1
 d.agg$Group.1 <- NULL
@@ -38,28 +40,24 @@ d.agg.n0 <- cmultRepl(t(d.agg.gt0), method="CZM", label=0)
 # clr transform
 d.agg.n0.clr <- codaSeq.clr(d.agg.n0)
 
+# do the SVD and get the total variance
 pcx.agg  <- prcomp(d.agg.n0.clr)
 mvar.agg.clr <- sum(pcx.agg$sdev^2)
 
+# check it
 par(mfrow=c(1,1))
 biplot(pcx.agg, var.axes=F, scale=0, cex=c(2,.5))
-
-plot(pcx.agg$x[,1], pcx.agg$x[,2], pch=NA,
-    xlim=c(min(pcx.agg$x[,1] )-5, max(pcx.agg$x[,1] + 5)),
-    xlab=paste("PC1: ", round(sum(pcx.agg$sdev[1]^2)/mvar.agg.clr, 3)),
-    ylab=paste("PC2: ", round(sum(pcx.agg$sdev[2]^2)/mvar.agg.clr, 3)),
-    main="PCA score plot")
-text(pcx.agg$x[,1], pcx.agg$x[,2], labels=rownames(pcx.agg$x), cex=3)
 
 ```
 
 ```{r outlier, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='outliers', fig.height=4, fig.width=14}
-
+# get the outliers from each group. See codaSeq.outlier
 # get WT indices
 WT <- grep("WT", rownames(d.agg))
 # subset
 WT.agg <- d.agg[WT,]
 
+# filter
 wt.gt0 <- codaSeq.filter(WT.agg, min.reads=0, min.prop=0, min.count=0, samples.by.row=TRUE)
 
 # estimate 0 values (zCompositions)
@@ -68,12 +66,15 @@ wt.agg.n0 <- cmultRepl(t(wt.gt0), method="CZM", label=0)
 # clr transform
 wt.agg.n0.clr <- codaSeq.clr(wt.agg.n0)
 
+# SVD
 pcx.wt  <- prcomp(wt.agg.n0.clr)
 mvar.wt.clr <- sum(pcx.wt$sdev^2)
 
+# plot
 par(mfrow=c(1,1))
 biplot(pcx.wt, var.axes=F, scale=0, cex=c(2,.5))
 
+# make a list of names to keep. found in $good
 WT.g <- codaSeq.outlier(wt.agg.n0.clr, plot.me=TRUE)
 
 # now do the same for SNF2
@@ -98,20 +99,14 @@ biplot(pcx.SNF, var.axes=F, scale=0, cex=c(2,.5))
 
 SNF.g <- codaSeq.outlier(SNF.agg.n0.clr, plot.me=TRUE)
 
-
 ```
 
 ```{r good_data_pca, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='outliers', fig.height=4, fig.width=14}
 
-
-# check names and see if they have . or :
-head(SNF.g$good)
-# if they are separated by ., then do the following
-WT.g$good <- gsub("WT.", "WT:", WT.g$good)
-SNF.g$good <- gsub("SNF2.", "SNF2:", SNF.g$good)
-
+# make a dataset of only the non-outlier samples
 d.good <- rbind(d.agg[SNF.g$good,],d.agg[WT.g$good,])
 
+# filter
 d.good.gt0 <- codaSeq.filter(d.good, min.reads=0, min.prop=0, min.count=0, samples.by.row=TRUE)
 
 # estimate 0 values (zCompositions)
@@ -120,9 +115,11 @@ d.good.agg.n0 <- cmultRepl(t(d.good.gt0), method="CZM", label=0)
 # clr transform
 d.good.agg.n0.clr <- codaSeq.clr(d.good.agg.n0)
 
+# SVD
 pcx.good  <- prcomp(d.good.agg.n0.clr)
 mvar.good <- sum(pcx.good$sdev^2)
 
+# plot and save
 par(mfrow=c(1,1))
 biplot(pcx.good, var.axes=F, scale=0, cex=c(2,.5))
 
@@ -131,6 +128,7 @@ write.table(d.good.gt0, file="data/filtered_table.txt", sep="\t", quote=F, col.n
 
 ```{r aldex}
 
+# check for differential abundance
 library(ALDEx2)
 
 # make a vector of conditions
@@ -147,21 +145,22 @@ x.t <- aldex.ttest(x, conds)
 x.all <- data.frame(x.e,x.t)
 
 
-# now explore1 BLand Altman Plot
+# now explore BLand Altman Plot
 aldex.plot(x.all, type="MA")
 
 # volcano plot
 plot(x.all$diff.btw, x.all$wi.eBH, log="y"
+plot(x.all$wi.eBH,x.all$diff.btw, log="x", col="grey")
+points(x.all$wi.eBH[x.all$effect > 4],x.all$diff.btw[x.all$effect > 4], col="red", pch=19)
+points(x.all$wi.eBH[x.all$effect < -4],x.all$diff.btw[x.all$effect < -4], col="blue",pch=19)
 
 # effect size plot
 aldex.plot(x.all, type="MW")
-# we use effect sizes of 2 or more
 
+# we typically use effect sizes of 2 or more
 
-# subset to find those with large effect sizes
+# subset to find those with very large effect sizes
 rownames(x.all)[abs(x.all$effect) > 4]
-
-
 ```
 ```{r edgeR}
 
@@ -173,12 +172,23 @@ y <- DGEList(counts=d.good.gt0,group=group)
 
 y <- calcNormFactors(y)
 
-# p
-design <- model.matrix(~group)
-
-
 y <- estimateDisp(y)
 
 # exact test using negative binomial
 et <- exactTest(y)
+
+# get the first 10 differential genes
+topTags(y)
+
+# plot a non-metric multidimensional scaling plot of the data
+# by default uses the 500 genes with the largest difference between samples
+# NMDS is essentially PCA on the rank order differences rather than actual variances
+# note that in this dataset, it looks very similar to the plot from the clr values
+
+plotMDS(y)
+
+# you can plot the MA plot
+# compare to the MA plot from ALDEx, they are rather similar for this dataset
+plotSmear(y)
+
 ```
