@@ -128,3 +128,57 @@ biplot(pcx.good, var.axes=F, scale=0, cex=c(2,.5))
 
 write.table(d.good.gt0, file="data/filtered_table.txt", sep="\t", quote=F, col.names=NA)
 ```
+
+```{r aldex}
+
+library(ALDEx2)
+
+# make a vector of conditions
+
+# you guys to make the distribution of possible values
+x <- aldex.clr(d.good.gt0)
+
+conds <- c(rep("SNF", length(SNF.g$good)), rep("WT", length(WT.g$good)))
+# me
+x <- aldex.clr(d.good.gt0, conds, mc.samples=16)
+
+x.e <- aldex.effect(x, conds)
+x.t <- aldex.ttest(x, conds)
+x.all <- data.frame(x.e,x.t)
+
+
+# now explore1 BLand Altman Plot
+aldex.plot(x.all, type="MA")
+
+# volcano plot
+plot(x.all$diff.btw, x.all$wi.eBH, log="y"
+
+# effect size plot
+aldex.plot(x.all, type="MW")
+# we use effect sizes of 2 or more
+
+
+# subset to find those with large effect sizes
+rownames(x.all)[abs(x.all$effect) > 4]
+
+
+```
+```{r edgeR}
+
+
+# from ALDEx above
+group <- factor(conds)
+
+y <- DGEList(counts=d.good.gt0,group=group)
+
+y <- calcNormFactors(y)
+
+# p
+design <- model.matrix(~group)
+
+
+y <- estimateDisp(y)
+
+# exact test using negative binomial
+et <- exactTest(y)
+```
