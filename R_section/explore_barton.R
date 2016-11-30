@@ -100,3 +100,28 @@ SNF.g <- codaSeq.outlier(SNF.agg.n0.clr, plot.me=TRUE)
 
 
 ```
+
+```{r good_data_pca, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='outliers', fig.height=4, fig.width=14}
+
+
+WT.g$good <- gsub("WT.", "WT:", WT.g$good)
+SNF.g$good <- gsub("SNF2.", "SNF2:", SNF.g$good)
+
+d.good <- rbind(d.agg[SNF.g$good,],d.agg[WT.g$good,])
+
+d.good.gt0 <- codaSeq.filter(d.good, min.reads=0, min.prop=0, min.count=0, samples.by.row=TRUE)
+
+# estimate 0 values (zCompositions)
+d.good.agg.n0 <- cmultRepl(t(d.good.gt0), method="CZM", label=0)
+
+# clr transform
+d.good.agg.n0.clr <- codaSeq.clr(d.good.agg.n0)
+
+pcx.good  <- prcomp(d.good.agg.n0.clr)
+mvar.good <- sum(pcx.good$sdev^2)
+
+par(mfrow=c(1,1))
+biplot(pcx.good, var.axes=F, scale=0, cex=c(2,.5))
+
+write.table(d.good.gt0, file="data/filtered_table.txt", sep="\t", quote=F, col.names=NA)
+```
