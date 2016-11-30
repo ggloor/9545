@@ -104,6 +104,9 @@ SNF.g <- codaSeq.outlier(SNF.agg.n0.clr, plot.me=TRUE)
 ```{r good_data_pca, message=FALSE, warning=FALSE, echo=TRUE, fig.cap='outliers', fig.height=4, fig.width=14}
 
 
+# check names and see if they have . or :
+head(SNF.g$good)
+# if they are separated by ., then do the following
 WT.g$good <- gsub("WT.", "WT:", WT.g$good)
 SNF.g$good <- gsub("SNF2.", "SNF2:", SNF.g$good)
 
