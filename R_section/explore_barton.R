@@ -127,7 +127,7 @@ write.table(d.good.gt0, file="data/filtered_table.txt", sep="\t", quote=F, col.n
 ```
 
 ```{r aldex}
-d.good.gt0 <- read.table("data/filtered_table.txt",row.names=1, sep="\t", stringsAsFactors=F, comment.char="")
+d.good.gt0 <- read.table("data/filtered_table.txt",row.names=1, header=T, sep="\t", stringsAsFactors=F, comment.char="")
 
 # check for differential abundance
 library(ALDEx2)
@@ -276,9 +276,12 @@ write.table(sig.edg, file="sig.edg.txt", quote=FALSE, row.names=F, col.names=F)
 # see the edgeR documentation for an example of GO terms, only metazoan models
 # we can do KEGG term annotation though
 
-de.aldex <- rownames(x.all)[x.all$effect > 4]
+de.aldex <- rownames(x.all)[x.all$effect > 2]
+write.table(de.aldex, file="aldex_sig.effect.txt", sep="\t", col.names=F,row.names=F, quote=F)
 
 # http://www.kegg.jp/kegg/tool/map_pathway1.html
+
+# kegga is going to an external database (KEGG)
 kegg.aldex <- kegga(de.aldex, species.KEGG="sce")
 
 ```

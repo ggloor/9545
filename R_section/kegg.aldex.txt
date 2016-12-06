@@ -1,0 +1,114 @@
+	Pathway	N	DE	P.DE
+path:sce00010	Glycolysis / Gluconeogenesis	58	0	1
+path:sce00020	Citrate cycle (TCA cycle)	32	0	1
+path:sce00030	Pentose phosphate pathway	28	0	1
+path:sce00040	Pentose and glucuronate interconversions	11	0	1
+path:sce00051	Fructose and mannose metabolism	23	0	1
+path:sce00052	Galactose metabolism	24	0	1
+path:sce00061	Fatty acid biosynthesis	11	1	0.130380898742764
+path:sce00062	Fatty acid elongation	8	0	1
+path:sce00071	Fatty acid degradation	19	0	1
+path:sce00072	Synthesis and degradation of ketone bodies	2	0	1
+path:sce00100	Steroid biosynthesis	17	1	0.194413401488677
+path:sce00130	Ubiquinone and other terpenoid-quinone biosynthesis	7	0	1
+path:sce00190	Oxidative phosphorylation	72	0	1
+path:sce00220	Arginine biosynthesis	17	0	1
+path:sce00230	Purine metabolism	99	3	0.125863384208104
+path:sce00240	Pyrimidine metabolism	72	1	0.604203855547638
+path:sce00250	Alanine, aspartate and glutamate metabolism	30	0	1
+path:sce00260	Glycine, serine and threonine metabolism	33	2	0.0635557465168253
+path:sce00261	Monobactam biosynthesis	3	0	1
+path:sce00270	Cysteine and methionine metabolism	40	4	0.00135575397738155
+path:sce00280	Valine, leucine and isoleucine degradation	13	1	0.15225249055979
+path:sce00290	Valine, leucine and isoleucine biosynthesis	12	2	0.00934752470216203
+path:sce00300	Lysine biosynthesis	12	1	0.141383932746454
+path:sce00310	Lysine degradation	15	0	1
+path:sce00330	Arginine and proline metabolism	21	0	1
+path:sce00332	Carbapenem biosynthesis	3	0	1
+path:sce00340	Histidine metabolism	14	0	1
+path:sce00350	Tyrosine metabolism	14	0	1
+path:sce00360	Phenylalanine metabolism	11	0	1
+path:sce00380	Tryptophan metabolism	17	0	1
+path:sce00400	Phenylalanine, tyrosine and tryptophan biosynthesis	17	0	1
+path:sce00410	beta-Alanine metabolism	13	0	1
+path:sce00430	Taurine and hypotaurine metabolism	3	0	1
+path:sce00450	Selenocompound metabolism	12	1	0.141383932746454
+path:sce00460	Cyanoamino acid metabolism	8	0	1
+path:sce00480	Glutathione metabolism	24	2	0.0356096745192274
+path:sce00500	Starch and sucrose metabolism	41	2	0.0928365460274482
+path:sce00510	N-Glycan biosynthesis	30	0	1
+path:sce00511	Other glycan degradation	1	0	1
+path:sce00513	Various types of N-glycan biosynthesis	30	1	0.317911920485268
+path:sce00514	Other types of O-glycan biosynthesis	13	1	0.15225249055979
+path:sce00520	Amino sugar and nucleotide sugar metabolism	32	0	1
+path:sce00561	Glycerolipid metabolism	26	0	1
+path:sce00562	Inositol phosphate metabolism	18	0	1
+path:sce00563	Glycosylphosphatidylinositol (GPI)-anchor biosynthesis	25	0	1
+path:sce00564	Glycerophospholipid metabolism	37	1	0.376620632000626
+path:sce00565	Ether lipid metabolism	7	0	1
+path:sce00590	Arachidonic acid metabolism	5	1	0.061447585448976
+path:sce00592	alpha-Linolenic acid metabolism	3	0	1
+path:sce00600	Sphingolipid metabolism	14	0	1
+path:sce00620	Pyruvate metabolism	39	0	1
+path:sce00630	Glyoxylate and dicarboxylate metabolism	26	0	1
+path:sce00640	Propanoate metabolism	13	0	1
+path:sce00650	Butanoate metabolism	9	1	0.107964968813048
+path:sce00660	C5-Branched dibasic acid metabolism	3	0	1
+path:sce00670	One carbon pool by folate	15	0	1
+path:sce00680	Methane metabolism	28	0	1
+path:sce00730	Thiamine metabolism	19	4	6.90743752500225e-05
+path:sce00740	Riboflavin metabolism	8	0	1
+path:sce00750	Vitamin B6 metabolism	12	0	1
+path:sce00760	Nicotinate and nicotinamide metabolism	20	0	1
+path:sce00770	Pantothenate and CoA biosynthesis	15	1	0.173592501714456
+path:sce00780	Biotin metabolism	6	0	1
+path:sce00785	Lipoic acid metabolism	3	0	1
+path:sce00790	Folate biosynthesis	8	0	1
+path:sce00791	Atrazine degradation	3	0	1
+path:sce00860	Porphyrin and chlorophyll metabolism	17	1	0.194413401488677
+path:sce00900	Terpenoid backbone biosynthesis	19	0	1
+path:sce00909	Sesquiterpenoid and triterpenoid biosynthesis	2	0	1
+path:sce00910	Nitrogen metabolism	7	0	1
+path:sce00920	Sulfur metabolism	15	0	1
+path:sce00970	Aminoacyl-tRNA biosynthesis	337	0	1
+path:sce01040	Biosynthesis of unsaturated fatty acids	11	0	1
+path:sce01100	Metabolic pathways	709	17	0.00164310982325062
+path:sce01110	Biosynthesis of secondary metabolites	299	6	0.164871918235486
+path:sce01130	Biosynthesis of antibiotics	224	5	0.144452013040122
+path:sce01200	Carbon metabolism	114	1	0.772709366443565
+path:sce01210	2-Oxocarboxylic acid metabolism	35	2	0.070529108346578
+path:sce01212	Fatty acid metabolism	22	1	0.244273841127934
+path:sce01230	Biosynthesis of amino acids	123	5	0.0169211953217101
+path:sce02010	ABC transporters	6	2	0.0022264800921881
+path:sce03008	Ribosome biogenesis in eukaryotes	91	0	1
+path:sce03010	Ribosome	183	0	1
+path:sce03013	RNA transport	93	0	1
+path:sce03015	mRNA surveillance pathway	46	0	1
+path:sce03018	RNA degradation	61	0	1
+path:sce03020	RNA polymerase	30	0	1
+path:sce03022	Basal transcription factors	32	0	1
+path:sce03030	DNA replication	31	0	1
+path:sce03040	Spliceosome	79	0	1
+path:sce03050	Proteasome	35	0	1
+path:sce03060	Protein export	22	0	1
+path:sce03410	Base excision repair	18	0	1
+path:sce03420	Nucleotide excision repair	37	0	1
+path:sce03430	Mismatch repair	20	0	1
+path:sce03440	Homologous recombination	20	0	1
+path:sce03450	Non-homologous end-joining	10	0	1
+path:sce04011	MAPK signaling pathway - yeast	114	2	0.424989405991195
+path:sce04070	Phosphatidylinositol signaling system	19	0	1
+path:sce04111	Cell cycle - yeast	126	2	0.477222191592108
+path:sce04113	Meiosis - yeast	130	4	0.0770362932878922
+path:sce04120	Ubiquitin mediated proteolysis	47	0	1
+path:sce04122	Sulfur relay system	7	0	1
+path:sce04130	SNARE interactions in vesicular transport	21	0	1
+path:sce04139	Mitophagy - yeast	41	1	0.407945323933777
+path:sce04140	Autophagy	17	0	1
+path:sce04141	Protein processing in endoplasmic reticulum	86	0	1
+path:sce04144	Endocytosis	73	0	1
+path:sce04145	Phagosome	36	0	1
+path:sce04146	Peroxisome	38	0	1
+path:sce04213	Longevity regulating pathway - multiple species	35	1	0.360364117571839
+path:sce04392	Hippo signaling pathway -multiple species	8	0	1
+path:sce04933	AGE-RAGE signaling pathway in diabetic complications	8	0	1
