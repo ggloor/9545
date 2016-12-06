@@ -193,7 +193,7 @@ plotBCV(y)
 # exact test using negative binomial
 et <- exactTest(y)
 # hack to get the data for plotting later
-tt <- topTags(et, n=6236)
+tt <- topTags(et, sort.by="none", n=6236)
 
 summary(et <- decideTestsDGE(et))
 detags <- rownames(y)[as.logical(et)]
