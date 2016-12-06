@@ -246,9 +246,28 @@ res = nbinomTest( cds, "SNF", "WT" )
 plotMA(res)
 
 # it is useful to look at the p value distribution
-hist(res$pval, breaks=100) #DESeq
-hist(tt[[1]]$PValue, breaks=100, col=rgb(1,0,0,0.1), add=T) # edgeR
-hist(x.all$we.ep, breaks=100, col=rgb(0,0,1,0.1), add=T) # ALDEx2
+par(mfrow=c(1,3))
+hist(res$pval, breaks=100, main="DESeq") #DESeq
+hist(tt[[1]]$PValue, breaks=100, col=rgb(1,0,0,0.1), main="edgeR") # edgeR
+hist(x.all$we.ep, breaks=100, col=rgb(0,0,1,0.1), main="ALDEx2") # ALDEx2
+
+par(mfrow=c(1,2))
+plot(res$pval, tt[[1]]$PValue, log="xy")
+plot(res$pval, x.all$we.ep, log="xy")
+
+
+# get lists of differential genes by tool
+# use cutoff of BH of 0.05
+
+sig.ald <- rownames(x.all)[x.all$we.eBH < 0.05]
+sig.des <- res$id[res$padj < 0.05]
+sig.edg <- detags
+
+write.table(sig.ald, file="sig.ald.txt", quote=FALSE, row.names=F, col.names=F)
+write.table(sig.des, file="sig.des.txt", quote=FALSE, row.names=F, col.names=F)
+write.table(sig.edg, file="sig.edg.txt", quote=FALSE, row.names=F, col.names=F)
+
+
 ```
 
 
