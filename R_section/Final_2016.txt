@@ -1,0 +1,31 @@
+final assignment for 9545R section
+
+This assignment is due on Wednesday Dec 14 at 5 pm
+
+R commands are denoted as:
+> R command # copy and use only the command
+
+This assignment has 2 parts:
+
+Part 1: Within the ALDEx2 dataset is a differential growth experiment of genetic variants that can be accessed with the command:
+
+> data(selex)
+
+The biological basics of the experiment are that variants can increase in abundance in the "S" samples, but not decrease in abundance in either the "S" or "N" samples. The technical reality of the experiment is that samples were sequenced to a depth that was not sufficient to ascribe a value greater than 1 for many variants in the "S" samples because those variants that grew under the "S" condition became relatively more abundant.
+
+Use ALDEx2, DESeq and edgeR to identify the list of DE variants. Given the known biology of the experiment, why did DESeq and edgeR fail on this dataset, but ALDEx2 gave a more biologically defensible result?
+
+I am expecting up to two pages of written results for this part, not including figures, tables, R code or references.
+
+Part 2:
+
+The gilad dataset at http://bowtie-bio.sourceforge.net/recount/index.shtml used RNA-seq to examine the differential expression of genes in male and female livers. There are several datasets in the paper, but we will focus on the human dataset.
+
+Obtain the gilad dataset, and test the hypothesis using modern tools that human males and females have differential gene expression between the sexes in their livers.
+
+Based on this analysis, what went wrong? What would be an experimental design that would be more appropriate to answer this question?
+
+I am expecting up to one page of written results, not including figures, tables, R code or references.
+
+Best of Luck!
+
