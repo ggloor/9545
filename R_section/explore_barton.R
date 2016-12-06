@@ -250,6 +250,8 @@ hist(res$pval, breaks=100) #DESeq
 hist(tt[[1]]$PValue, breaks=100, col=rgb(1,0,0,0.1), add=T) # edgeR
 hist(x.all$we.ep, breaks=100, col=rgb(0,0,1,0.1), add=T) # ALDEx2
 ```
+
+
 ```{r, annotation}
 # you can supply lists of genes of interest, or call directly from within edgeR for this
 # see the edgeR documentation for an example of GO terms, only metazoan models
