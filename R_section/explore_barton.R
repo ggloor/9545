@@ -127,6 +127,7 @@ write.table(d.good.gt0, file="data/filtered_table.txt", sep="\t", quote=F, col.n
 ```
 
 ```{r aldex}
+d.good.gt0 <- read.table("data/filtered_table.txt",row.names=1, sep="\t", stringsAsFactors=F, comment.char="")
 
 # check for differential abundance
 library(ALDEx2)
@@ -164,6 +165,9 @@ rownames(x.all)[abs(x.all$effect) > 4]
 ```
 ```{r edgeR}
 
+# https://bioconductor.org/packages/devel/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf
+
+library(edgeR)
 
 # from ALDEx above
 group <- factor(conds)
@@ -174,12 +178,6 @@ y <- calcNormFactors(y)
 
 y <- estimateDisp(y)
 
-# exact test using negative binomial
-et <- exactTest(y)
-
-# get the first 10 differential genes
-topTags(y)
-
 # plot a non-metric multidimensional scaling plot of the data
 # by default uses the 500 genes with the largest difference between samples
 # NMDS is essentially PCA on the rank order differences rather than actual variances
@@ -187,8 +185,79 @@ topTags(y)
 
 plotMDS(y)
 
+# how well does the data fit the model?
+# looking for the blue and red lines to be coincident
+plotBCV(y)
+
+# this is the differential abundance test
+# exact test using negative binomial
+et <- exactTest(y)
+# hack to get the data for plotting later
+tt <- topTags(et, n=6236)
+
+summary(et <- decideTestsDGE(et))
+detags <- rownames(y)[as.logical(et)]
+
+
 # you can plot the MA plot
 # compare to the MA plot from ALDEx, they are rather similar for this dataset
-plotSmear(y)
+plotSmear(y, de.tags=detags)
+abline(h=c(-1, 1), col="blue", lty=2)
+
+```
+
+```{ r DESeq}
+# https://www.bioconductor.org/packages/3.3/bioc/vignettes/DESeq/inst/doc/DESeq.pdf
+
+library(DESeq)
+
+# we will use the same input table
+# set up the metadata
+design <- data.frame(
+  row.names = colnames(d.good.gt0),
+  condition = conds,
+  libType="single-end"
+)
+
+# for convenince so I can cut and paste
+countTable <- d.good.gt0
+condition <- design$condition
+condition <- factor(condition)
+
+# make the base data table
+cds = newCountDataSet( countTable, condition )
+
+# normalize read counts
+cds = estimateSizeFactors( cds )
+# observe
+sizeFactors( cds )
+
+# estimate the variance and fit to a negative binomial
+cds = estimateDispersions( cds )
+
+# observe how well it fits the data
+# how does this differ and what is similar to edgeR?
+plotDispEsts( cds )
+
+# find DE genes
+res = nbinomTest( cds, "SNF", "WT" )
+
+# plot the MA plot, compare to ALDEx2 and edgeR
+plotMA(res)
+
+# it is useful to look at the p value distribution
+hist(res$pval, breaks=100) #DESeq
+hist(tt[[1]]$PValue, breaks=100, col=rgb(1,0,0,0.1), add=T) # edgeR
+hist(x.all$we.ep, breaks=100, col=rgb(0,0,1,0.1), add=T) # ALDEx2
+```
+```{r, annotation}
+# you can supply lists of genes of interest, or call directly from within edgeR for this
+# see the edgeR documentation for an example of GO terms, only metazoan models
+# we can do KEGG term annotation though
+
+de.aldex <- rownames(x.all)[x.all$effect > 4]
+
+# http://www.kegg.jp/kegg/tool/map_pathway1.html
+kegg.aldex <- kegga(de.aldex, species.KEGG="sce")
 
 ```
