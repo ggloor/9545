@@ -11,6 +11,10 @@ Part 1: Within the ALDEx2 dataset is a differential growth experiment of genetic
 
 > data(selex)
 
+There are 7 N and 7 S samples, and they are in order
+
+> conds <- c(rep("N", 7), rep("S",7))
+
 The biological basics of the experiment are that variants can increase in abundance in the "S" samples, but not decrease in abundance in either the "S" or "N" samples. The technical reality of the experiment is that samples were sequenced to a depth that was not sufficient to ascribe a value greater than 1 for many variants in the "S" samples because those variants that grew under the "S" condition became relatively more abundant.
 
 Use ALDEx2, DESeq and edgeR to identify the list of DE variants. Given the known biology of the experiment, why did DESeq and edgeR fail on this dataset, but ALDEx2 gave a more biologically defensible result?
