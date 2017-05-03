@@ -18,7 +18,7 @@ opts_chunk$set(dev = 'pdf')
 
 This document is an .Rmd document and is located at
 
-github.com/ggloor/ in compositions/background_reading/Correlation_composition.Rmd
+github.com/ggloor/9545/Correlation_composition.Rmd
 
 # The problem of spurious correlation
 
