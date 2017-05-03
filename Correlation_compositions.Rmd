@@ -1,0 +1,335 @@
+---
+title: "Correlation in compositional data"
+author: "Greg Gloor"
+date: "May 5, 2017"
+output:
+    beamer_presentation:
+        fig_width: 4
+        fig_height: 3
+---
+
+```{r, echo=F}
+# in theory
+# R -e "rmarkdown::render('Correlation_compositions.Rmd')"
+library(knitr)
+opts_chunk$set(dev = 'pdf')
+```
+# About this document
+
+This document is an .Rmd document and is located at
+
+github.com/ggloor/ in compositions/background_reading/Correlation_composition.Rmd
+
+# The problem of spurious correlation
+
+Spurious correlation arises when data are constrained by a constant denominator
+
+"if the ratio of two absolute measurements on the same or different organs be taken it is convenient to term this ratio an index.
+
+If $u=f_1(x,y)$ and $v=f_2(z,y)$ be two functions of the three variables $x,y,z$, and these variables be selected at random so there exists no correlation between $x,z$, $y,z$, or $z,x$, there will still be found to exist correlation between $u$ and $v$. Thus a real danger arises when a statisital biologist attributes the correlation between two functions like $u$ and $v$ to organic relationship $\ldots$ ." Pearson 1897
+
+### This problem exists whenever there is a constant denominator in a dataset: proportion, percentage, ppm, etc.
+
+----
+
+### Further Readings and Sources
+- Pearson K. 1897. Mathematical contributions to the theory of evolution. -- on a form of spurious correlation which may arise when indices are used in the measurement of organs. Proceedings of the Royal Society of London: 60:489
+- Aitchison J. 1986. The Statistical Analysis of Compositional Data. Chapman and Hall
+- Lovell D. 2015. Proportionality: a valid alternative to correlation for relative data. PLoS Comp Bio. 11:e1004075
+- Pawlowsky-Glahn V. 2015. Modeling and Analysis of Compositional Data. John Wiley & Sons
+- Erb I. 2016. How should we measure proportionality on relative gene expression data?  Theory in Biosci. 135:21
+
+----
+
+# Outline
+### 1) demonstration of the problem
+### 2) an intuitive introduction to compositional data
+### 3) deriving the list of pathologies
+### 4) solution: examining ratios
+### 5) phi and rho as partial solutions
+
+----
+
+# Set up a small dataset
+
+Assume first that we are dealing with numbers, three samples, five features. Calculate the correlations from the whole, a subset, the whole converted to proportions per sample, and a subset converted to proportions per sample.
+
+```{r, eval=T, results="asis"}
+s1 <- c(1,2,2,5,5)
+s2 <- c(1.5,4,3,2,20)
+s3 <- c(2,8,1,3,1.5)
+s <- rbind(s1,s2,s3)
+colnames(s) <- c("A", "B", "C", "D", "E")
+
+cor.s <- cor(s, method="spearman")
+
+s.p <- t(apply(s, 1, function(x) x/sum(x)))
+cor.s.p <- cor(s.p, method="spearman")
+
+s.p2 <- t(apply(s[,1:4], 1, function(x) x/sum(x)))
+cor.s.p2 <- cor(s.p, method="spearman")
+
+```
+\newpage
+# Numbers vs. proportions
+
+\scriptsize
+What do you notice about the effect of converting each sample to a proportion?
+
+```{r}
+print(s)
+print(round(s.p, 3))
+print(round(s.p2,3))
+```
+----
+
+# Spurious correlation in action
+
+```{r, echo=F, fig.width=8, fig.height=7}
+
+par(mfrow=c(3,4))
+plot(s[,1],s[,2], xlab= "A", ylab="B", pch=19,cex=2, col="blue", main="Sp. cor. = 1\nPn cor. = .98")
+plot(s[,1],s[,3], xlab= "A", ylab="C", pch=19,cex=2, col="blue", main="Sp. cor. = -0.5\nPn cor. = -.5")
+plot(s[,1],s[,4], xlab= "A", ylab="D", pch=19,cex=2, col="blue", main="Sp. cor. = -0.5\nPn cor. = -.5")
+plot(s[,1],s[,5], xlab= "A", ylab="E", pch=19,cex=2, col="blue", main="Sp. cor. = -0.5\nPn cor. = -.17")
+
+plot(s.p[,1],s.p[,2], xlab= "A", ylab="B", pch=19,cex=2, col="red", main="Sp. cor. = 1
+Pn cor = .97")
+plot(s.p[,1],s.p[,3], xlab= "A", ylab="C", pch=19,cex=2, col="red", main="Sp. cor. = -0.5
+Pn cor = -.64")
+plot(s.p[,1],s.p[,4], xlab= "A", ylab="D", pch=19,cex=2, col="red", main="Sp. cor. = 0.5
+Pn cor = .36")
+plot(s.p[,1],s.p[,5], xlab= "A", ylab="E", pch=19,cex=2, col="red", main="Sp. cor. = -1
+Pn cor = -.96")
+
+
+plot(s.p2[,1],s.p2[,2], xlab= "A", ylab="B", pch=19,cex=2, col="orange", main="Sp. cor. = .87
+Pn cor = .84")
+plot(s.p2[,1],s.p2[,3], xlab= "A", ylab="C", pch=19,cex=2, col="orange", main="Sp. cor. = 0
+Pn cor = -.23")
+plot(s.p2[,1],s.p2[,4], xlab= "A", ylab="D", pch=19,cex=2, col="orange", main="Sp. cor. = -.87
+Pn cor = -.99")
+
+```
+
+----
+
+# Correlation is not stable
+
+The correlation observed is not the same for the numerical and proportional data
+
+The correlation changes again when the proportional data are subset
+
+\textbf{this is spurious correlation} and is an unpredictable correlation observed between two variables whenever they share a common denominator, whether correlated or not with either or both of the two variables.
+
+We usually think of correlations as linear relationships of the type $y=m \times x + b$, and the correlation coefficient is a standardized covariance relationship. But correlation is defined in terms of covariance as we shall see later.
+
+----
+
+# univariate thought experiment:
+
+50% of 50%?
+
+- how many $ are you paying?
+- what proportion are you paying?
+- how did you arrive at that value?
+
+Lessons?
+
+1. not adding or subtracting
+2. can't derive underlying number
+
+
+----
+
+# bivariate thought experiment:
+
+Unfair coin: 60% heads
+
+- How many tails?
+- How many flips?
+- What information do we really have?
+- What is the correlation between heads and tails?
+
+Lessons?
+
+1. not adding or subtracting
+2. can't derive underlying number
+3. only have ratio
+4. working on D-1 simplex
+5. negative correlation bias: negative correlation is meaningless
+6. these properties are generalizable to as many variables as is necessary
+
+----
+
+# A geometric intuition (Pawlowsky-Glahn)
+
+```{r, echo=F,fig.height=6, fig.width=5}
+# Ratio information
+
+par(mfrow=c(1,1))
+plot(3,2, xlim=c(0,3.1), ylim=c(0,3.1), xlab="Heads", ylab="Tails", xaxs="i", yaxs="i", col=rgb(0,0,1,0.5), pch=19,cex=2, xaxt="n", yaxt="n")
+points(1.5,1, col=rgb(0,0,1,0.5), pch=19,cex=2)
+points(2,3, col=rgb(1,0,0,0.5), pch=19,cex=2)
+
+points(3/5,2/5, col=rgb(0,0,1,0.5), pch=19,cex=2)
+points(2/5,3/5, col=rgb(1,0,0,0.5), pch=19,cex=2)
+
+abline(0,3/2, lty=2)
+abline(0,2/3,lty=3)
+
+abline(1,-1, col="grey", lwd=2)
+abline(3,-1, col="grey", lwd=2, lty=2)
+
+
+text(2.6,2, label="30,20")
+text(1.8,0.9 , label="15,10")
+text(2 +0.35,3, label="20,30")
+text(3/5+0.4,2/5, label="0.6,0.4")
+```
+----
+
+# interpretation
+
+1. note that any variables that are correlated must appear on a line projecting from the origin
+2. linear relationships on this line are perfectly correlated: "compositionally associated"
+3. We can represent the value on the simplex line as a ratio $\frac{H}{T} = \frac{0.6}{0.4} = 1.5$
+4: This can be made symmetrical by taking the logarithm: $log(\frac{0.6}{0.4}) = \sim{0.41}$ (blue), since $log(\frac{20}{30}) = \sim{-0.41}$ (red)
+5. Addition and subtractions of logarithms are the natural operations on the simplex.
+6. Any simplex is the same as any other
+
+----
+
+# Correlations plotted
+
+```{r, echo=F, fig.width=3, fig.height=2}
+# make some random data (uniform for display)
+x.r <- runif(100,1,100)
+y.r <- vector()
+for( i in 1:length(x.r)){y.r[i] <- rnorm(1, mean=x.r[i], sd=6)}
+
+par(mfrow=c(1,2), cex=0.5)
+curve(x*1, 1,100, lwd=3, xlim=c(1,150), ylim=c(1,400), xlab="X", ylab="Y", main="Euclidian", col=rgb(0,0,0,0.3))
+curve(x*4, 1,100, add=T, col=rgb(1,0,0,0.3), lwd=3)
+curve(x*1 + 20, 1,100, add=T, col=rgb(0,0,1,0.3), lwd=3)
+text(1,200, label="y=x", col="black", pos=4)
+text(1,250, label="y=4x", col="red", pos=4)
+text(1,300, label="y=x+20", col="blue", pos=4)
+
+points(x.r, y.r, col=rgb(0,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r*4, col=rgb(1,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r+20, col=rgb(0,0,1,0.5), pch=19, cex=0.4)
+
+curve(x*1, 1,100, lwd=3, xlim=c(1,150), ylim=c(1,400), xlab="X", ylab="Y", main="Log", log="xy", col=rgb(0,0,0,0.3))
+curve(x*4, 1,100, add=T, col=rgb(1,0,0,0.3), lwd=3)
+curve(x*1 + 20, 1,100, add=T, col=rgb(0,0,1,0.3), lwd=3)
+
+points(x.r, y.r, col=rgb(0,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r*4, col=rgb(1,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r+20, col=rgb(0,0,1,0.5), pch=19, cex=0.4)
+```
+
+1. Constant ratio relationships cannot have an intercept, becomes a non-linear in log-space
+2. Constant ratio relationships can have a slope $\ne 1$, these become the intercept in log-space
+3. Familiar measures of correlation do not require an intercept of 0
+4. False positive correlations for both positive and negative correlation but different reasons
+
+----
+
+
+### recasting correlation as ratios between parts
+
+$Var(X) = \langle(X - \mu_x)^2\rangle$
+
+$Cov(XY) = \langle(X - \mu_x)(Y-\mu_y)\rangle$
+
+$cor(XY) = \frac{Cov(XY)}{\sqrt{Var(X)Var(Y)}}$
+
+Note that Spearman's correlation is the same measure on ranks
+
+This will identify linear relationships, but does not account for slope or intercept
+
+Now we know we are looking for linear relationships of ratios and how these manifest on linear or logarithmic plots.
+
+----
+
+So if $Y=m  x$ is constant then $Var(log(\frac{X}{Y})) = 0$ (Aitchison)
+
+This is not a correlation, it is a measure of lack of association. Zero means associated (constant ratio), any other value means a lack of association, but we need to scale the measure.
+
+Problems:
+
+1. the metric must be scaled
+2. the slope must be 1 (in log space)
+3. we must have a linear line
+4. we must account for scatter
+
+----
+
+# The $\phi$ metric (Lovell)
+
+We first transform our data by the centered log-ratio: formally equivalent to calculating all pairs of ratios: makes differences between the parts linearly different (Aitchison 1986)
+
+The data are still on the simplex, but not constrained to be in (1,0) to (0,1) for a ratio.
+
+```{r, echo=T}
+Z <- c(1,2,4,8,16,32,64)
+cZ <- log2(Z) - mean(log2(Z))
+```
+\vspace{-0.5cm}
+$cZ = (-3,-2,-1,0,1,2,3)$
+
+$clr(Z) = log\frac{z_i}{gz}; i=1 \ldots D; gz =\mathrm{geometric~mean~of~}Z$
+
+$\phi_{xy} = \frac{Var(clr(x) - clr(y))}{clr(x)} = 0$ if the two variables are associated
+
+geometrically: $\phi_{xy} =  1 + m - 2 m  | r |$
+
+----
+
+# The $\rho$ metric (Erb)
+
+$\rho_{xy}= \frac{2 cov(clr(x),clr(y))}{Var(clr(x)) + Var(clr(y))}$
+
+geometrically: $\rho_{xy} =  \frac{2r}{m + 1/m}$
+
+
+no neat geomtric interpretation, but ranges from -1 to +1.
+
+----
+
+# Summary
+- compositional data are any data represented by a constant sum
+- only ratio information is obtained
+- simplex and only simplex operations
+- any simplex is always equivalent to the unit simplex
+- "in the absence of any other information or assumptions, correlation of relative abundances is just wrong" (Lovell)
+- Why not calculate two numbers, slope and correlation (Egozcue pc)
+
+```{r, echo=F, fig.width=3, fig.height=2}
+# make some random data (uniform for display)
+x.r <- runif(100,1,100)
+y.r <- vector()
+for( i in 1:length(x.r)){y.r[i] <- rnorm(1, mean=x.r[i], sd=4)}
+
+par(mfrow=c(1,2), cex=0.5)
+curve(x*1, 1,100, lwd=3, xlim=c(1,150), ylim=c(1,400), xlab="X", ylab="Y", main="Euclidian", col=rgb(0,0,0,0.3))
+curve(x*4, 1,100, add=T, col=rgb(1,0,0,0.3), lwd=3)
+curve(x*1 + 20, 1,100, add=T, col=rgb(0,0,1,0.3), lwd=3)
+text(1,200, label="y=x", col="black", pos=4)
+text(1,250, label="y=4x", col="red", pos=4)
+text(1,300, label="y=x+20", col="blue", pos=4)
+
+points(x.r, y.r, col=rgb(0,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r*4, col=rgb(1,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r+20, col=rgb(0,0,1,0.5), pch=19, cex=0.4)
+
+curve(x*1, 1,100, lwd=3, xlim=c(1,150), ylim=c(1,400), xlab="X", ylab="Y", main="Log", log="xy", col=rgb(0,0,0,0.3))
+curve(x*4, 1,100, add=T, col=rgb(1,0,0,0.3), lwd=3)
+curve(x*1 + 20, 1,100, add=T, col=rgb(0,0,1,0.3), lwd=3)
+
+points(x.r, y.r, col=rgb(0,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r*4, col=rgb(1,0,0,0.5), pch=19, cex=0.4)
+points(x.r, y.r+20, col=rgb(0,0,1,0.5), pch=19, cex=0.4)
+```
+

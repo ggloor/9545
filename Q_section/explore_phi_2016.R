@@ -8,7 +8,7 @@ source("http://michael.hahsler.net/SMU/ScientificCompR/code/map.R")
 data(ak_op)
 data(hmpgenera)
 
-f <- codaSeq.filter(ak_op, min.reads=1000, min.prop=0.001, samples.by.row=FALSE)
+f <- codaSeq.filter(ak_op, min.reads=1000, min.prop=0.005, min.occurrence=0.2, samples.by.row=FALSE)
 
 conds <- c(rep("A", 15), rep("O", 15))
 

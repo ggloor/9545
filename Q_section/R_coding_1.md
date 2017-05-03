@@ -56,11 +56,14 @@ mean(x)
 ```
 
 ```r
-summary(x)
+z <- summary(x)
+print(z)
 ```
 
+
+the mean of vector x is: `r mean(x)`
 ```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 ## 0.00559 0.84540 4.80500 3.91800 5.69300 8.48200
 ```
 
