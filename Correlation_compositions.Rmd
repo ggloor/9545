@@ -12,6 +12,7 @@ output:
 # in theory
 # R -e "rmarkdown::render('Correlation_compositions.Rmd')"
 library(knitr)
+
 opts_chunk$set(dev = 'pdf')
 ```
 # About this document
@@ -296,6 +297,118 @@ geometrically: $\rho_{xy} =  \frac{2r}{m + 1/m}$
 
 no neat geomtric interpretation, but ranges from -1 to +1.
 
+----
+
+ignore, terrible hack!
+
+```{r,echo=F, message=F, warning=F}
+library(ALDEx2)
+library(CoDaSeq)
+library(zCompositions)
+library(igraph)
+library(car)
+library(grDevices)
+source("http://michael.hahsler.net/SMU/ScientificCompR/code/map.R")
+
+data(ak_op)
+data(hmpgenera)
+
+f <- codaSeq.filter(ak_op, min.reads=1000, min.prop=0.005, min.occurrence=0.2, samples.by.row=FALSE)
+f.n0 <- cmultRepl(t(f), method="CZM", label=0)
+f.clr <- codaSeq.clr(f.n0)
+
+conds <- c(rep("A", 15), rep("O", 15))
+
+f.x <- aldex.clr(f, conds)
+f.e <- aldex.effect(f.x, conds, include.sample.summary=TRUE)
+
+x.phi <- codaSeq.phi(f.x)
+
+phi.cutoff <- .2
+x.lo.phi <- subset(x.phi, phi <= phi.cutoff)
+
+x.lo.phi
+
+#########
+
+##(phi)=0.124
+#par(mfrow=c(1,1))
+#
+#plot(f.clr[,"39306"], f.clr[,"39235"])
+#
+#
+#abline(lm(f.clr[,"39235"] ~ f.clr[,"39306"]), lty=2)
+#abline(1.5,1, col="red", lty=2)
+#
+## proportions
+##plot(f.n0[,"39306"], f.n0[,"39235"])
+## E(clr)
+##points(f.e["39306",c(4:33)],f.e["39235",c(4:33)], col="red")
+##abline(lm(as.numeric(f.e["39235",c(4:33)]) ~ as.numeric(f.e["39306",c(4:33)])), col="blue", lty=2)
+#
+##basically a good fit to all parameters but for
+## sample op_024199 which is marginal
+## slope is 0.95
+#fit <- (lm(f.clr[,"39235"] ~ f.clr[,"39306"]))
+#
+#fit <- lm(as.numeric(f.e["39235",c(4:33)]) ~ as.numeric(f.e["39306",c(4:33)]))
+#par(mfrow=c(2,2))
+#plot(fit)
+#par(mfrow=c(1,1))
+
+
+#########
+# the 5 most abundant things are:
+# "35898" "38382" "38665" "38765" "39103"
+# so what happens if we remove them
+f.r <- !rownames(f) %in% c("35898","38382","38665","38765","39103")
+f.rare <- f[f.r,]
+
+f.rare.n0 <- cmultRepl(t(f.rare), method="CZM", label=0)
+f.rare.clr <- codaSeq.clr(f.rare.n0)
+
+conds <- c(rep("A", 15), rep("O", 15))
+
+f.rare.x <- aldex.clr(f.rare, conds)
+f.rare.e <- aldex.effect(f.rare.x, conds, include.sample.summary=TRUE)
+
+x.rare.phi <- codaSeq.phi(f.rare.x)
+
+phi.cutoff <- .2
+x.rare.lo.phi <- subset(x.rare.phi, phi <= phi.cutoff)
+
+x.rare.all.phi <- subset(x.rare.phi, phi <= 6)
+
+cor.f <- cor(f.n0, method="spearman")
+cor.rare.f <- cor(f.rare.n0, method="spearman")
+
+
+x.r.phi.11 <- subset(x.rare.phi, col=="11")
+x.phi.11 <- subset(x.phi, col=="11")
+rownames(x.phi.11) <- x.phi.11$row
+
+mn.phi <- expression(paste("E(", phi, ")"))
+mn.Sp <- expression(paste("Spearman"))
+
+
+```
+----
+
+An example of how $\phi$ is more consistent in a real dataset than is Spearman's correlation
+
+
+```{r, echo=F, fig.width=8, fig.height=5, message=F,warnings=F}
+
+
+par(mfrow=c(1,2))
+plot(cor.rare.f["11",], cor.f["11", rownames(cor.f) %in% rownames(cor.rare.f)],
+   pch=19, col=rgb(0,0,0,0.3), cex=0.5, xlab="remove 5", ylab="all OTUs", main=mn.Sp)
+abline(0,1, lty=2, lwd=2, col=rgb(1,0,0,0.3))
+plot(x.r.phi.11$phi, x.phi.11[rownames(x.phi.11) %in% rownames(cor.rare.f), "phi"],
+    pch=19, col=rgb(0,0,0,0.3) , cex=0.5,  xlab="remove 5", ylab="all OTUs", main=mn.phi)
+abline(0,1, lty=2, lwd=2, col=rgb(1,0,0,0.3))
+
+```
 ----
 
 # Summary
