@@ -397,7 +397,7 @@ mn.Sp <- expression(paste("Spearman"))
 An example of how $\phi$ is more consistent in a real dataset than is Spearman's correlation
 
 
-```{r, echo=F, fig.width=8, fig.height=5, message=F,warnings=F}
+```{r, echo=F, fig.width=8, fig.height=4, message=F,warnings=F}
 
 
 par(mfrow=c(1,2))
@@ -419,7 +419,7 @@ abline(0,1, lty=2, lwd=2, col=rgb(1,0,0,0.3))
 - "in the absence of any other information or assumptions, correlation of relative abundances is just wrong" (Lovell)
 - Why not calculate two numbers, slope and correlation (Egozcue pc)
 
-```{r, echo=F, fig.width=3, fig.height=2}
+```{r, echo=F, fig.width=3.5, fig.height=2}
 # make some random data (uniform for display)
 x.r <- runif(100,1,100)
 y.r <- vector()
