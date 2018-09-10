@@ -33,7 +33,7 @@ This is an R markdown document, and the plain text code can be found at [gihub.c
 
 If you are in the R console and have this file in the working directory you can compile it manually
 
-`rmarkdown::render("R
+`rmarkdown::render("R_coding_1_anscombe.Rmd")`
 
 # Basics of R
 
