@@ -29,7 +29,12 @@ output: html_document
 
 # Basics of R markdown
 
-This is an R markdown document, and the plain text code can be found at:
+This is an R markdown document, and the plain text code can be found at [gihub.com/ggloor/9545](https://raw.githubusercontent.com/ggloor/9545/master/Q_section/R_coding_1_anscombe.Rmd) under the 9545/Q section. This is the raw source. You can download it and modify it as you see fit.
+
+If you are in the R console and have this file in the working directory you can compile it manually
+
+`rmarkdown::render("R
+
 # Basics of R
 
 R is a programming language by statisticians for statisticians. It is idiosyncratic, but is worth learning despite (not because of) this as it is an extremely useful tool or data analysis. While other statistical analysis programs allow you to do what they have available, R allows you to do what you can imagine.
@@ -86,120 +91,83 @@ There are a few commands that make understanding your data object tolerable.
 
 and many others, but these are the main workhorses. Try them out on the data types made above.
 
-## A minimal R Markdown example
+When subsetting datasets there are two ways, and the method used depends if we are subsetting a vector or a list
 
-```{r}
-# this is a comment
-# everything in R is a vector (or series of values)
-# commands or functions use round brackets
+```{r, echo=T}
 
-x <- c(1,2,4,8)
-y <- c(1,2,4,16)
+# subsetting vectors uses square brackets
+x[2] # second element of vector x
+xy[3,2] # the third row and second column of matrix xy
 
-# convert x,y to proportion
-x.p <- round(x/sum(x),3)
-y.p <- round(y/sum(y),3)
+# dataframes can be subset the same way
+# lists require double brackets
+xyz[[4]][3,2]
 
-
-# convert number to ratio using element 3
-x.r.3 <- x/x[3]
-y.r.3 <- y/y[3]
-
-x.p.3 <- x.p/x.p[3]
-y.p.3 <- y.p/y.p[3]
+# we can name elements of a list and subset by name
+names(xyz) <- c("v_X", "v_Y", "v_Z", "m_xyz")
+ xyz$m_xyz[3,2]
 
 ```
+## built in data
 
+R has many built in datasets, of which the anscombe dataset is one of the most famous
 
-```r
-# runif() random uniform function to generate pseudo random numbers
-# c() concatenation function to make an atomic vector
-
-x <- c(runif(10, 0,10))
-
-y <- c(runif(10,2,10))
-
-z <- c(runif(10,0,5))
-
-mean(x)
-```
-
-```
-## [1] 3.91789
-```
-
-```r
-z <- summary(x)
-print(z)
-```
-
-
-the mean of vector x is: `r mean(x)`
-```
-##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
-## 0.00559 0.84540 4.80500 3.91800 5.69300 8.48200
-```
-
-we can determine the mean of vector x, or summarize vector x
-
-
-Those are the simple basics, and equivalent to a 'hello world' in other languages. Now you need to know what the basic functions that you can use. If it is not a dataset, everything in R is a function. You can make your own function if you like, but there are many pre-built functions for manipulating and displaying data.
-
-Now we will check out the basic vocabulary page from Hadley Wickham's advanced R book: http://adv-r.had.co.nz/Vocabulary.html
-
-
-### lists, matrices, dataframes
-
-Now we can convert xyz into a matrix using cbind. What does the rbind() function do?
-
-
-```r
-xyz.m <- cbind(x,y,z)
-xyz.d <- data.frame(x,y,z, stringsAsFactors=F)
-xyz.l <- list(x,y,z)
-names(xyz.l) <- c("x","y","z")
-dim(xyz.m)
-```
-
-```
-## [1] 10  3
-```
-
-We will explore this with
-`str`
-`dim`
-`typeof`
-
-and work on subsetting the data
-
-# please familiarize yourselves with the above
-## we will start here on wed
-
-### functions
-
-Everything that is not data in R is a function. Functions are defined as:
-
-`function.name <- function (parameters) {code}`
-
-So for example, the rdirichlet function that we will use in a moment looks like this:
-
-
-```r
-rdirichlet <- function (n, alpha)
-{
-  if(length(n) > 1) n <- length(n)
-  #if(length(n) == 0 || as.integer(n) == 0) return(numeric(0))
-  #n <- as.integer(n)
-  if(n < 0) stop("value(n) can not be negative in rtriang")
-
-  if(is.vector(alpha)) alpha <- t(alpha)
-  l <- dim(alpha)[2]
-  x <- matrix(rgamma(l * n, t(alpha)), ncol = l, byrow=TRUE)  # Gere le recycling
-  return(x / rowSums(x))
-}
-```
 ```{r}
 data(anscombe)
-plot(anscombe$x1~anscombe$x2)
-abline(lm(anscombe$x1~anscombe$x2))
+anscombe
+```
+
+What type of data is this dataset? how many rows, how many columns?
+
+The X and Y columns of  dataset return the same summary statistics
+```{r}
+colSums(anscombe)
+colMeans(anscombe)
+
+# find out about the anscombe dataset by ?anscombe
+# essentially, no matter what we do we get the same summary statistics
+# eg. run a linear model and an ANOVA across all four xy pairs
+# note that the summary statistics are essentially identical
+
+ff <- y ~ x # check out what each element of ff is
+mods <- setNames(as.list(1:4), paste0("lm", 1:4))
+for(i in 1:4) {
+  ff[2:3] <- lapply(paste0(c("y","x"), i), as.name) # what?
+  mods[[i]] <- lmi <- lm(ff, data = anscombe)
+  print(anova(lmi))
+}
+
+cor.list <- list()
+# correlation
+cor.list[[1]] <- round(cor(anscombe$x1, anscombe$y1), digits=4)
+cor.list[[2]] <- round(cor(anscombe$x2, anscombe$y2), digits=4)
+cor.list[[3]] <- round(cor(anscombe$x3, anscombe$y3), digits=4)
+cor.list[[4]] <- round(cor(anscombe$x4, anscombe$y4), digits=4)
+
+#define the OLS regression
+cor.list[[5]] <- lm(y1 ~ x1, data=anscombe)
+cor.list[[6]] <- lm(y2 ~ x2, data=anscombe)
+cor.list[[7]] <- lm(y3 ~ x3, data=anscombe)
+cor.list[[8]] <- lm(y4 ~ x4, data=anscombe)
+
+# what is in cor.list?
+```
+
+Enough summary statistics, lets plot!
+
+```{r, fig.height=7, fig.width=6}
+
+# show four plots
+par(mfrow=c(2,2))
+col.fill=c("red", "yellow", "green","blue")
+
+# this is a for loop
+
+for(i in 1:4){
+nm.txt <- paste("Quartet ",i, sep="")
+cor.txt <- paste("corr =", cor.list[[i]], sep="")
+plot(anscombe[,i], anscombe[,i+4] , main=nm.txt, sub=cor.txt,
+    xlab=paste("x",i), ylab=paste("y",i), pch=21, col="darkgrey", bg=col.fill[i])
+abline(cor.list[[i+4]])
+}
 ```
