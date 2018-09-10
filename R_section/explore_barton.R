@@ -30,6 +30,8 @@ d.agg <- aggregate(t(d), by=list(nms.agg), FUN=sum)
 rownames(d.agg) <- d.agg$Group.1
 d.agg$Group.1 <- NULL
 
+write.table(d.agg, file="barton_agg.tsv", sep="\t", quote=F, col.names=NA)
+
 # remove rows with 0 counts
 # returns data with samples by columns!!!!
 d.agg.gt0 <- codaSeq.filter(d.agg, min.reads=0, min.prop=0, min.count=0, samples.by.row=TRUE)

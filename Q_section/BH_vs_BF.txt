@@ -1,0 +1,34 @@
+mat.out <- matrix(data=NA, nrow=1000, ncol=3)
+colnames(mat.out) <- c("m.p", "m.bh", "m.bf")
+
+# this shows that there is not perfect correspondence
+# between BH and BF at the lowest adjusted p value
+# reason unknown
+
+for(i in 1:1000){
+	mat.r <- matrix(data=rnorm(5000), nrow=5, ncol=1000)
+
+	#t test of 50 random number, takes 3rd element (p value) and makes into numeric vector. applies mat.r columns with p values to out
+	out <- apply(mat.r, 2, function(x) as.numeric(t.test(x, rnorm(5))[3]))
+
+	#plots histogram of out with 100 breaks
+	#hist(out, breaks=100)
+
+	#draws vertical red line at x=0.05
+	#abline(v=0.05, col=rgb(1,0,0,0.5), lty=2, lwd=2)
+
+	#length(which(out < 0.05))
+
+	mat.out[i,1] <- min(out)
+
+	bf <- p.adjust(out, method="bonferroni")
+	mat.out[i,3] <- min(bf)
+
+
+	bh <- p.adjust(out, method="BH")
+	mat.out[i,2] <- min(bh)
+
+}
+
+plot(mat.out[,"m.bh"], mat.out[,"m.bf"], pch=19, col=rgb(0,0,0,0.3))
+abline(0,1)

@@ -1,7 +1,7 @@
 ---
 title: "Assignment 1"
 author: "gg"
-date: "September 17, 2015"
+date: "Oct 4, 2017"
 output: html_document
 ---
 # Assignment 1
@@ -11,60 +11,47 @@ You will be graded for your comments, I need to know that you understand the bas
 
 I know that part 4 will be a challenge, but it can be done simply using a for loop. You first have to decide exactly what it is you want to do---this is almost always the most difficult part.
 
-## functions and loops in R
+You may not include any R functions or packages that are not part of base R.
+
+I will schedule a 5 minute interview with each of you to go over the comments and code. As noted in class, this will be graded on a pass-fail basis. If you do the assignment yourself, you will pass.
+
+# functions and loops in R
 
 loops and functions are standard fare in R programs. Another is the if-else statement that is used to do something conditionally. For example:
 
 explanation of if-else function in R is here:
 http://www.programiz.com/r-programming/if-else-statement
 
-#### part 1: commment this code. Make sure to use your own wording
+## part 1: commment this code. Make sure to use your own wording
 ```{r}
-for(i in 1:10){
-	if ( i %% 2 == 0) {
-		print( c(i, "is even"))
-	} else if (i %% 2 != 0) {
-		print(c(i, "is odd"))
+for(i in seq(1,29,3)){
+	if ( (i %/% 2) %% 2 == 0) {
+		print( c(i, i %/% 2, "is even"))
+	} else if ((i %/% 2) %% 2 != 0) {
+		print(c(i, i %/% 2, "is odd"))
 	}
 }
 ```
 
-#### part 2: change the code to print the value of i and 'huzzah' if the value of i is a prime number for numbers between 10 and 20. Again comment the code in your own words.
+## part 2:
 
-## P values
+change the code to print the value of i and 'huzzah' if the value of i is a prime number for numbers between 10 and 20. Again comment the code in your own words.
 
-#### part 3: what is the difference in interpretation between a P value, a family wide error-rate value determined by the Bonferroni correction and a false discovery rate determined by the Benjamini-Hochberg method?
+## part 3 P values:
 
-#### part 4: explore part 4 below, what can you conclude about the ability of an experiment to see read differences it the dataset has 10000 genes, but only 6-10 samples equally divided between control and experimental conditions?
+what is the likelihood that a p value in random data will fall in the interval p<0.05? Support your answer with the randomly generated dataset below. What is the importance of multiple hypothesis testing?
+
+again, comment the code
 
 ```{r}
-# I have changed the variable assignmet to x.mat from class so that you can do some exploratory analysis.
+mat.r <- matrix(data=rnorm(10000), nrow=50, ncol=200)
 
-# variables for the means in group 1 and 2
-mean1 <- 10
-mean2 <- 10
-sd <- 2 # we will hold this constant
-sample.size <- 6 # make sure this is always even!!
+out <- apply(mat.r, 2, function(x) as.numeric(t.test(x, rnorm(50))[3]))
 
-#### should not need to change from here
-x.mat <- matrix(data=NA, nrow=100, ncol=sample.size)
-
-max.set1 <- ncol(x.mat)/2
-min.set2 <- ncol(x.mat)/2+1
-# was very annoying to get the bracketing just right, so don't mess with this
-for(i in 1:nrow(x.mat)){
-  x.mat[i,1:1:max.set1] <- rnorm((ncol(x.mat)/2), mean1, sd)
-  x.mat[i,min.set2:ncol(x.mat)] <- rnorm((ncol(x.mat)/2), mean2, sd)
-}
-#### to here
-
-# provided for reference as to how to grab the P values and get the mean
-tt <- apply(x.mat, 1, function(x){as.numeric(t.test(x[1:max.set1], x[min.set2:ncol(x.mat)])[3])})
-mean(tt)
+hist(out, breaks=100)
+abline(v=0.05, col=rgb(1,0,0,0.5), lty=2, lwd=2)
 ```
 
-Using this dataset, and the code above as a starting point, change the mean and sample sizes to determine the effect of sample size and difference between means on P values. Present your data as a graph of the mean P value obtained for 100 replicates (nrow in x.mat). Try varying the difference in means from 0-4 fold, and the sample size from 6-100. Do both in increments (i.e., you do not need to do every value since we are looking for trends)
-
-It is acceptable to do this manually, and to provide a table, however full marks will be given if the analysis can be done inside as a loop.
-
+## part 4
+generate a function and a for loop that will plot each x value in the anscombe dataset vs. each y value. This will be 16 total plots. Display the correlation coefficient rounded to 3 decimal places as the title of each plot.
 

@@ -1,0 +1,25 @@
+Proposal for a course in Biomedical Big Data Analytics
+
+Greg Gloor
+
+Preamble: This course is designed to introduce students in the life sciences to the concept, importance and methods of experimental design for high throughput biology and to data analysis. The objective is to teach students the frameworks needed to conduct a robust and reproducible experiment and the analysis of the resulting big data in the biomedical sciences.
+
+The biomedical sciences are awash in data from high throughput biology. The sequence databases are growing at an exponential rate and include not just gene and genome information, but gene and protein expression and functional outcomes. Despite the rapid increase in raw data, the analysis of this data and our ability to extract useful information lags severely. It is axiomatic in high throughput biomedical science that the analysis is much more difficult than is capturing the raw data, and that the same data can give contradictory results when re-analyzed. There are no opportunities at the undergraduate level to learn that these datasets exist, how to access them, and how to analyze these datasets in a robust manner.
+
+# https://www.bioconductor.org/help/workflows/high-throughput-sequencing/
+
+Pre-requisites: introductory statistics, basic R will be taught, 2nd year biomedical sciences
+
+Learning objectives:
+
+1) learn to maintain a reproducible notebook with R markdown
+2) data exploration basics - scatter plots, correlation, principle component and principle co-ordinate analysis
+3) Bayesian thinking applied to biomedical data
+4) multiple hypothesis testing
+5) experimental design for high throughput data collection
+6) extraction of high throughput biological data from sequence read archives
+7) processing high throughput biological data for analysis
+8) re-analysis and meta-analysis
+9) outcome reporting
+
+The course is designed as a computational biology lab course.

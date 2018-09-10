@@ -1,0 +1,94 @@
+
+one <- c(1,2,3, 4)
+two <- c(10,20,30,40)
+three  <- c(10,30,20,40)
+
+data <- cbind(one,two, three)
+
+# DESeq normalization method
+# from https://github.com/hbc/knowledgebase/wiki/Count-normalization-methods
+des.norm <- function(data){ # x is a matrix with samples by column
+	# calculate the feature-wise geometric mean
+	G <- apply(data, 1, function(x) exp(mean(log(x)))  )
+	# calculate the ratio between G and all features
+	rat <- apply(data, 2, function(x) x/G)
+	# get the median ratio per sample
+	norm <- apply(rat, 2, median)
+
+	# scale each read by the median ratio per sample
+	norm.counts <- t(apply(data, 1, function(x) x/norm))
+	return(norm.counts)
+}
+
+
+
+rdirichlet <- function (n, alpha)
+#ISALIAS ddirichlet
+#--------------------------------------------
+{
+  if(length(n) > 1) n <- length(n)
+  if(length(n) == 0 || as.integer(n) == 0) return(numeric(0))
+  n <- as.integer(n)
+  if(n < 0) stop("integer(n) can not be negative in rtriang")
+
+  if(is.vector(alpha)) alpha <- t(alpha)
+  l <- dim(alpha)[2]
+  x <- matrix(rgamma(l * n, t(alpha)), ncol = l, byrow=TRUE)  # Gere le recycling
+  return(x / rowSums(x))
+}
+
+
+
+num.one = 1 # the number of rare-counts in the dataset
+minimum.count <- 100 # multiplier to set minimum count for in.put
+in.put <- c(10,20971,1,1,5,10,20,50,100,200,1000) * minimum.count
+
+mat.double <- matrix(data=NA, nrow=20, ncol=num.one + 10)
+prop.mat <- matrix(data=NA, nrow=20, ncol=num.one + 10)
+clr.mat <- matrix(data=NA, nrow=20, ncol=num.one + 10)
+
+mat.double.u <- matrix(data=NA, nrow=20, ncol=num.one + 10)
+prop.mat.u <- matrix(data=NA, nrow=20, ncol=num.one + 10)
+clr.mat.u <- matrix(data=NA, nrow=20, ncol=num.one + 10)
+
+for(i in 0:19){
+	# non-constant sum input
+	#junk <- in.put * c(2^i, rep(1,num.one + 9))
+	junk <- in.put * c(2^i, rep(1,num.one + 9))
+	mat.double.u[i+1,] <- junk
+	prop.mat.u[i+1,] <- as.numeric( rdirichlet(1, junk) )
+	clr.mat.u[i+1,] <- 2^(log2(prop.mat.u[i+1,]) - mean(log2(prop.mat.u[i+1,])))
+}
+
+des.prop.u <- t(des.norm(t(prop.mat.u)))
+des.norm.u <- t(des.norm(t(mat.double.u)))
+clr.mat.u <- t(apply(prop.mat.u, 1, function(x) log(x) - mean(log(x))))
+
+
+par(mfrow=c(2,2))
+
+plot(mat.double.u[,1], pch=20, type="b",  ylim=c(min(mat.double.u), max(mat.double.u)), log="y", xlab="time point", ylab="raw count")
+title( main="Unconstrained\ninput", adj=0.5)
+points(mat.double.u[,2], type="b",pch=21, col="gray")
+points(mat.double.u[,num.one + 10], type="b",pch=23, col="blue")
+points(mat.double.u[,num.one+4], type="b",pch=24, col="red")
+
+
+plot(des.norm.u[,1], pch=20, type="b",  ylim=c(min(des.norm.u), max(des.norm.u)), log="y",xlab="time point", ylab="corrected count")
+title( main="DE count\ninput", adj=0.5)
+points(des.norm.u[,2], type="b",pch=21, col="gray")
+points(des.norm.u[,num.one + 10], type="b",pch=23, col="blue")
+points(des.norm.u[,num.one+4], type="b",pch=24, col="red")
+
+
+plot(des.prop.u[,1], pch=20, type="b",  ylim=c(min(des.prop.u), max(des.prop.u)), log="y", xlab="time point", ylab="corrected count")
+title( main="DE prop\ninput", adj=0.5)
+points(des.prop.u[,2], type="b",pch=21, col="gray")
+points(des.prop.u[,num.one + 10], type="b",pch=23, col="blue")
+points(des.prop.u[,num.one+4], type="b",pch=24, col="red")
+
+plot(clr.mat.u[,1], pch=20, type="b",  ylim=c(min(clr.mat.u), max(clr.mat.u)),  xlab="time point", ylab="clr value")
+title( main="CLR prop\ninput", adj=0.5)
+points(clr.mat.u[,2], type="b",pch=21, col="gray")
+points(clr.mat.u[,num.one + 10], type="b",pch=23, col="blue")
+points(clr.mat.u[,num.one+4], type="b",pch=24, col="red")

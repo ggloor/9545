@@ -3,7 +3,7 @@ output: word_document
 ---
 
 # Course outline
-Biochemistry 9545 Macromolecular Informatics. The course will typically meet once per week Wednesdays at 9:30-11:30. There will be an interruption in the course, and additional sessions will be scheduled to account for this interruption.
+Biochemistry 9545 Macromolecular Informatics. The course will typically meet twice per week Mondays and Wednesdays at 9:30-11:30. There will be interruptions in the course, and additional sessions will be scheduled to make this time up.
 
 # Instructor:
 Greg Gloor, ggloor@uwo.ca, 519-661-3526 (office)
@@ -11,21 +11,21 @@ Greg Gloor, ggloor@uwo.ca, 519-661-3526 (office)
 #### NOTE: This is intended to be focused largely on theoretical aspects of analysis, and practical information on how to manage and keep track of your work
 
 # Requirements
-Students will be expected to bring a functional laptop to class with the R programming environment already loaded and functional. Students should be familiar with the file system of their computer and be able to locate files associated with R on their own. Students should have a working text editor installed. For Macs this could include Textwrangler, for PCs the could include Notepad++. Students should have a copy of _"Analyzing compositional data with R"_ loaded on their computer for reference. We will use many of the principles outlined in that book. In addition, I encourage students to get a copy of _"R in Action"_ --- you will find this invaluable.
+Students will be expected to bring a functional laptop to class with the R programming environment already loaded and functional. Students should be familiar with the file system of their computer and be able to locate files associated with R on their own. Students should have a working plain text editor installed. For Macs this could include Textwrangler, for PCs this could include Notepad++. Atom is also a good choice. Students should have a copy of _"Analyzing compositional data with R"_ (https://link.springer.com/book/10.1007%2F978-3-642-36809-7) loaded on their computer for reference. We will use many of the principles outlined in that book. In addition, I encourage students to get a copy of _"R in Action"_ --- you will find this invaluable. There is a companion web site http://www.statmethods.net.
 
 I expect that students will learn outside of class, by doing the readings and doing at least some of their own troubleshooting. We will not be installing much, but what we do install will help you to keep track and present your work in the future.
 
 ## Sessions
 1. An introduction to high throughput sequencing and data types generated in high throughput sequencing. An introduction to R, markdown and knitr (functional note taking and reproducible data analysis)
 2. A further introduction to R, data types, installing packages, simple plots, exploring multivariate data
-3. An introduction to the structure of multivariate datasets. An introduction to compositional data.
-4. An introduction to the error structure in high throughput sequencing. PCA and compositional biplots.
-5. An introduction to Bayesian thinking in compositional data
+3. An introduction to Bayesian thinking. Monte Hall problem, Regression to the mean, Gambler's fallacy
+4. An introduction to the structure of multivariate datasets. An introduction to compositional data.
+5. An introduction to the error structure in high throughput sequencing. PCA and compositional biplots.
 6. Correlations in compositional data
 
 ## Assessments
-1. The student will be required to submit a proper R program. Marks will be assessed based on ability to properly comment, make a functional script, conciseness and proper form. This must be submitted in the form of a .Rmd document.
-2. The student will be required to make and properly interpret a compositional biplot from a dataset provided.
+1. The student will be required to submit a proper R program. Marks will be assessed based on ability to properly comment, ability to make a functional script, conciseness and proper form. This must be submitted in the form of a .Rmd document without external dependencies. There will be an oral component to the grading for this assignment
+2. The student will be required to make and properly interpret a compositional biplot from a dataset provided. The student will be required to solve and explain some simple problems based on probabilistic thinking. There may be an oral component to the grading for this assignment
 3. The student will be required to examine and interpret the correlation and pairwise abundance of parts of a high-throughput sequencing dataset
 
 The course is largely theoretical. Assessments are to be worked on and handed in individually, and are equally weighted. Students will be expected to conduct independent learning to practice the concepts and tools. Here is where you will find the R in Action book or the companion website invaluable.

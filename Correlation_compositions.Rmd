@@ -77,7 +77,7 @@ cor.s.p2 <- cor(s.p, method="spearman")
 \scriptsize
 What do you notice about the effect of converting each sample to a proportion?
 
-```{r}
+```{r, message=F, error=F, warning=F}
 print(s)
 print(round(s.p, 3))
 print(round(s.p2,3))

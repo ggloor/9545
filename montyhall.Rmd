@@ -1,0 +1,116 @@
+---
+title: "Monty Hall was awesome"
+author: "Greg Gloor"
+output: pdf_document
+---
+
+# The Monty Hall problem
+
+The Monty Hall problem shows the danger of not thinking about a probability vector properly. In this problem, you are given a choice of 3 doors, one of which is a winner the other two of which are losers. After you choose, the Monty reveals one of the doors that you did not choose as being a loser. You are given the choice of switching after the reveal. Should you?
+
+The usual response by those not familiar is to believe that the odds of choosing right are the same prior and post reveal. This is wrong as can be demonstrated by thinking about the prior and post reveal data as a probability vector.
+
+Prior to the reveal, there $P=[\frac{1}{3},\frac{1}{3},\frac{1}{3}]$ likelihood of being correct. However, post reveal, the probability changes to $P=[0,\frac{2}{3},\frac{1}{3}]$ or $P=[\frac{2}{3},0,\frac{1}{3}]$ depending on whether Monty chose door 1 or door 2. Observe that the door that Monty chooses has its prior probability added to the probability of the only  non-chosen door to give a new probabily vector post-reveal. The open door does not disappear, it is just that the probability of that door being a winner has been reduced to 0.
+
+The `R` code below shows the result of simulating the problem with a 3 door setup, assuming you choose door 3 each time. It does not matter which door you choose for this to work.
+
+```{r}
+
+# generalized to any number of elements in the vector
+n.elements <- 3
+
+# make a random vector where the largest value is the winner
+
+make.rn <- function(){
+  rn <- runif(n.elements)
+  rn[rn == max(rn)] <- 1
+  rn[rn < 1] <- 0
+  return(rn)
+}
+
+# if the last element is the winner, choose first or second at random
+# does not matter since all are losers
+# otherwise choose the one feature that is a winner and keep the last
+# which must be a loser
+be.Monty <- function(rn){
+  if(rn[n.elements] == 1) {
+    rnum <- runif(1)
+     oneOrTwo <- 2
+     if(rnum < 0.5) oneOrTwo =1
+     new.rn <- c(rn[c(oneOrTwo,n.elements)])
+  }else{
+    new.rn <- c(rn[rn == 1], rn[n.elements])
+  }
+  return(new.rn)
+}
+
+output <- matrix(data=NA, nrow=1000, ncol=2)
+for(i in 1:1000){
+  rn <- make.rn()
+  output[i,] <- be.Monty(rn)
+}
+
+```
+
+So in this simulation changing doors gives a winning percentage of `r {sum(output[,1])/1000}`, and not changing gives a winning percentage of  `r sum(output[,2]/1000)`.
+
+# So what?
+
+So what does this have to do with high throughput sequencing? It is common practice in any high throughput sequencing experiment to collect data on \emph{all} features in the dataset and then to filter the data to exclude low count reads that are likely to fall below the \emph{significance} threshold. So a dataset of 8000 features, may be reduced to fewer than 1000 features because the vast majority are \emph{sparse} and hence of no interest.
+
+At this point, the remaining 1000 features are tested for \emph{relative difference} between groups, often using a multiple test correction procedure. Lets think about this from the perspective of Monty Hall.
+
+The analyst has collected 8000 doors worth of data, and reduced that to 1000 by having Monty remove 7000 known losers from the dataset. So the remaining 1000 gain the probability of the removed 7000 - meaning that they become more likely to be winners simply because they remain in the dataset. This may not be a large problem is the likelihood that the ones being removed being different or distinguishing is truly close to 0.
+
+Worse, the multiple test correction is done assuming a number of tests of 1000, not 8000! Thus, the multiple test correction will always under-estimate the false positive rate.
+
+So is it any wonder that we have many false positive results?
+
+```{r}
+# plot selex with all vs reduced set lacking high-count variables
+library(ALDEx2)
+data(selex)
+conds <- c(rep("N", 7), rep("S",7))
+x <- aldex.clr(selex, conds, mc.samples=1028)
+x.e <- aldex.effect(x,conds)
+x.t <- aldex.ttest(x,conds)
+x.all <- data.frame(x.e,x.t)
+
+
+ red <- selex[which(rowSums(selex) > 1500),]
+ x.red <- aldex.clr(red, conds, mc.samples=1028)
+e.red <- aldex.effect(x.red, conds)
+ t.red <- aldex.ttest(x.red,conds)
+ red.all <- data.frame(e.red,t.red)
+
+par(mfrow=c(2,2))
+plot(red.all$we.ep, x.all[rownames(red.all), "we.ep"], pch=19, cex=0.3, col=rgb(0,0,0,0.1), xlab="reduced P value", ylab="all P value", log="xy")
+abline(0,1, col=rgb(1,0,0,0.3), lty=2, lwd=3)
+
+plot(red.all$we.eBH, x.all[rownames(red.all), "we.eBH"], pch=19, cex=0.3, col=rgb(0,0,0,0.1), xlab="reduced P adj", ylab="all P adj", log="xy")
+abline(0,1, col=rgb(1,0,0,0.3), lty=2, lwd=3)
+
+plot(red.all$effect, x.all[rownames(red.all), "effect"],  pch=19, cex=0.3, col=rgb(0,0,0,0.1), xlab="reduced effect", ylab="all effect")
+abline(0,1, col=rgb(1,0,0,0.3), lty=2, lwd=3)
+
+aldex.plot(red.all)
+
+
+ sml <- selex[which(rowSums(selex) < 1000),]
+ x.sml <- aldex.clr(sml, conds, mc.samples=1028, denom="iqlr")
+e.sml <- aldex.effect(x.sml, conds)
+ t.sml <- aldex.ttest(x.sml,conds)
+ sml.all <- data.frame(e.sml,t.sml)
+
+par(mfrow=c(2,2))
+plot(sml.all$we.ep, x.all[rownames(sml.all), "we.ep"], pch=19, cex=0.3, col=rgb(0,0,0,0.1), xlab="smluced P value", ylab="all P value", log="xy")
+abline(0,1, col=rgb(1,0,0,0.3), lty=2, lwd=3, xlim=c(1e-4,1), ylim=c(1e-4,1))
+
+plot(sml.all$we.eBH, x.all[rownames(sml.all), "we.eBH"], pch=19, cex=0.3, col=rgb(0,0,0,0.1), xlab="smluced P adj", ylab="all P adj", log="xy", xlim=c(1e-2,1), ylim=c(1e-2,1))
+abline(0,1, col=rgb(1,0,0,0.3), lty=2, lwd=3)
+
+plot(sml.all$effect, x.all[rownames(sml.all), "effect"],  pch=19, cex=0.3, col=rgb(0,0,0,0.1), xlab="smluced effect", ylab="all effect")
+abline(0,1, col=rgb(1,0,0,0.3), lty=2, lwd=3)
+
+aldex.plot(sml.all)
+```
