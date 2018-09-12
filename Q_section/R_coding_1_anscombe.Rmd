@@ -158,11 +158,11 @@ Enough summary statistics, lets plot!
 ```{r, fig.height=7, fig.width=6}
 
 # show four plots
-par(mfrow=c(2,2))
 col.fill=c("red", "yellow", "green","blue")
 
-# this is a for loop
+par(mfrow=c(2,2))
 
+# this is a for loop
 for(i in 1:4){
 nm.txt <- paste("Quartet ",i, sep="")
 cor.txt <- paste("corr =", cor.list[[i]], sep="")

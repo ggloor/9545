@@ -480,11 +480,11 @@ cor.list[[8]] &lt;- lm(y4 ~ x4, data=anscombe)
 # what is in cor.list?</code></pre>
 <p>Enough summary statistics, lets plot!</p>
 <pre class="r"><code># show four plots
-par(mfrow=c(2,2))
 col.fill=c(&quot;red&quot;, &quot;yellow&quot;, &quot;green&quot;,&quot;blue&quot;)
 
-# this is a for loop
+par(mfrow=c(2,2))
 
+# this is a for loop
 for(i in 1:4){
 nm.txt &lt;- paste(&quot;Quartet &quot;,i, sep=&quot;&quot;)
 cor.txt &lt;- paste(&quot;corr =&quot;, cor.list[[i]], sep=&quot;&quot;)
