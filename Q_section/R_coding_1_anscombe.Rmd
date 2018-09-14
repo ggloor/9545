@@ -170,4 +170,21 @@ plot(anscombe[,i], anscombe[,i+4] , main=nm.txt, sub=cor.txt,
     xlab=paste("x",i), ylab=paste("y",i), pch=21, col="darkgrey", bg=col.fill[i])
 abline(cor.list[[i+4]])
 }
+
+## This is another way to get the exact same result
+## the list jnk and the list mods are exactly the same
+
+data(anscombe)
+
+jnk <- list()
+
+for(i in 1:4){
+
+    print(c(i, i+4))
+    name.jnk <- paste("lm:", i, sep="")
+    jnk[[name.jnk]] <- lm(anscombe[,i+4] ~ anscombe[,1])
+
+}
+
+
 ```

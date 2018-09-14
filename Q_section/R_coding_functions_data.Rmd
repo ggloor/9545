@@ -14,13 +14,13 @@ Functions have the form `function.name <- function(param){do.something(param)}`.
 
 ```{r, echo=T}
 # define the function
-plot.anscombe <- function(dataset, offset, col.fill){
+plot.anscombe.gg <- function(dataset, off.set, col.fill){
 
-    nm.txt <- paste("Quartet ",offset, sep="")
-    cor.txt <- paste("corr =", cor.list[[offset]], sep="")
-    plot(dataset[,offset], dataset[,offset+4] , main=nm.txt, sub=cor.txt,
-        xlab=paste("x",offset), ylab=paste("y",offset), pch=21, col="darkgrey", bg=col.fill[i])
-    abline(cor.list[[offset+4]])
+    nm.txt <- paste("Quartet ",off.set, sep="")
+    cor.txt <- paste("corr =", cor.list[[off.set]], sep="")
+    plot(dataset[,off.set], dataset[,off.set+4] , main=nm.txt, sub=cor.txt,
+        xlab=paste("x",off.set), ylab=paste("y",off.set), pch=21, col="darkgrey", bg=col.fill[i])
+    abline(cor.list[[off.set+4]])
 
 }
 ```
@@ -34,7 +34,7 @@ col.fill=c("red", "yellow", "green","blue")
 
 par(mfrow=c(2,2))
 
-for(i in 1:4){ plot.anscombe(anscombe, i, col.fill) }
+for(i in 1:4){ plot.anscombe.gg(anscombe, i, col.fill) }
 
 ```
 
@@ -42,10 +42,12 @@ for(i in 1:4){ plot.anscombe(anscombe, i, col.fill) }
 
 ```{r, echo=T}
 # function to make random data on a line
-cor.scatter <- function(offset){
-    x.r <- runif(100,offset,offset + 10)
+cor.scatter <- function(off.set){
+    x.r <- runif(100,off.set,off.set + 10)
     y.r <- vector()
-    for( i in 1:length(x.r)){y.r[i] <- rnorm(1, mean=x.r[i], sd=4)}
+    for( i in 1:length(x.r)){
+        y.r[i] <- rnorm(1, mean=x.r[i], sd=4)
+    }
     return(cbind(x.r,y.r))
 }
 
