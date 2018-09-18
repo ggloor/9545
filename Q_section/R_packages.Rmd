@@ -1,0 +1,104 @@
+---
+title: "9545 2018 Day 2"
+output: html_document
+---
+# Review of day 1
+
+
+
+# Functions in R
+
+Functions in R allow us to write a method once and use it over and over again. All commands in R are functions. Functions can operate on data or on other functions. Understanding how to make a function will help you understand how to call a function and use the built-in functions effiently.
+
+Functions have the form `function.name <- function(param){do.something(param)}`. As an example, let's make a function to do the plotting for the Anscombe datastet.
+
+```{r, echo=T}
+# define the function
+plot.anscombe.gg <- function(dataset, off.set, col.fill){
+
+    nm.txt <- paste("Quartet ",off.set, sep="")
+    cor.txt <- paste("corr =", cor.list[[off.set]], sep="")
+    plot(dataset[,off.set], dataset[,off.set+4] , main=nm.txt, sub=cor.txt,
+        xlab=paste("x",off.set), ylab=paste("y",off.set), pch=21, col="darkgrey", bg=col.fill[i])
+    abline(cor.list[[off.set+4]])
+
+}
+```
+
+And this simplifies our for loop a lot!
+
+Add comments to the two code blocks
+
+```{r, echo = T}
+col.fill=c("red", "yellow", "green","blue")
+
+par(mfrow=c(2,2))
+
+for(i in 1:4){ plot.anscombe.gg(anscombe, i, col.fill) }
+
+```
+
+## Here is another function that generates random data along a line
+
+```{r, echo=T}
+# function to make random data on a line
+cor.scatter <- function(off.set){
+    x.r <- runif(100,off.set,off.set + 10)
+    y.r <- vector()
+    for( i in 1:length(x.r)){
+        y.r[i] <- rnorm(1, mean=x.r[i], sd=4)
+    }
+    return(cbind(x.r,y.r))
+}
+
+# the data are saved as 2 column matrices
+# random data
+s1 <- cor.scatter(10)
+s2 <- cor.scatter(1)
+s3 <- cor.scatter(20)
+s.all <- rbind(s1,s2,s3)
+
+# try
+# make this a list
+
+# plot it
+par(mfrow=c(1,1))
+plot(s.all[,1], s.all[,2])
+points(s1[,1], s1[,2], col="red")
+points(s2[,1], s2[,2], col="blue")
+points(s3[,1], s3[,2])
+
+# what is the correlation in each?
+# add a line of best fit for each and for the whole
+
+# now translate and retry
+s2.t <- cbind(s2[,1] + 20, s2[,2])
+s3.t <- cbind(s3[,1] - 20, s3[,2])
+s.all.t <- rbind(s1, s2.t, s3.t)
+par(mfrow=c(1,2))
+plot(s.all.t[,1], s.all.t[,2])
+points(s1[,1], s1[,2], col="red")
+points(s2.t[,1], s2.t[,2], col="blue")
+points(s3.t[,1], s3.t[,2])
+```
+
+# Writing and reading data
+
+Here we will learn two ways to save data. One in a plain text file, the other as an R data structure more plotting.
+
+The simplest way is to save and load the data. This is perfect for multidimensional data and for lists.  For example:
+
+```{r, echo=T}
+# what is happening here?
+save(s.all.t, file="s.all.t")
+rm(s.all.t)
+load("s.all.t")
+```
+
+The second way is to save the data as a table. This is perfect for passing around to your friends, or for supplementary info in a paper.
+
+```{r, echo=T}
+
+write.table(s.all.t, file="s.all.t.txt", sep="\t", quote=F, col.names=F)
+
+jnk <- read.table("s.all.t.txt", sep="\t", header=F, row.names=1, stringsAsFactors=F)
