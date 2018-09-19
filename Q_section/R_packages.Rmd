@@ -60,4 +60,8 @@ par(mfrow=c(1,1))
 plot(selex[,1], selex[,7], pch=19, col=rgb(0,0,0,0.1))
 abline(0,1, col="red")
 cor(selex[,1], selex[,7]
+
+par(mfrow=c(1,1))
+plot(selex[,1]+0.5, selex[,7]+0.5, pch=19, col=rgb(0,0,0,0.1), log="xy")
+abline(0,1, col="red")
 ```
