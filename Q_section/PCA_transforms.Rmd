@@ -1,0 +1,22 @@
+---
+title: "9545 2018 Days 5-6"
+output: html_document
+---
+# Transforms, PCA, Distances
+### AKA Keep Looking at your Data!!!!
+
+We will use the selse dataset from the `ALDEx2 R` package. This dataset has 14 samples, 1600 enzyme variants. Some variants are active, some variants are not. If an enzyme is inactive, the cell containing it stays at the same \emph{absolute} abundance in the experiment. If the enzyme is active, the cells containing it grow exponentially. Nothing can be come absolutely rarer in this experiment. But relatively ...
+
+```{r, echo=T}
+# load the R package
+library(ALDEx2)
+
+# Load up the data
+data(selex)
+```
+
+Principle component analysis is a method to simplify complex datasets by finding linear combinations of features that explain the variance in the dataset. It is very sensitive to non-linearity in the dataset.
+
+Principle co-ordinate analysis is a method to identify distance relationships between samples. It is similarly sensitive to non-linearity, but has the advantage of being useful with any distance (or dissimilarity metric).
+
+
